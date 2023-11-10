@@ -1,9 +1,12 @@
-import path from "path"
+import path from "path";
+
 function rootControl(app) {
-    app.get("/", exibir)
-    function exibir(req,res){
-        res.sendFile(path.join(path.resolve(), "./control/documentacao.html"))
+    app.get("/", exibir);
+
+    function exibir(req, res) {
+        const filePath = path.join(__dirname, "../Projeto-ReservaNaLoja-Daniel/");
+        res.sendFile(filePath);
     }
 }
 
-export default rootControl
+export default rootControl;

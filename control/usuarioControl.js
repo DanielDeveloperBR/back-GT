@@ -2,12 +2,13 @@ import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 function usuarioControl(app) {
     app.use(cookieParser());
     app.use(session({
-        secret: 'iiosfoamfopaeoifmromokmfas',
-        resave: false,
-        saveUninitialized: true,
+        secret: 'chave braba',
+        resave: true,
+        saveUninitialized: false,
     }));
     app.get('/usuario', exibir)
     function exibir(request, response) {
@@ -16,11 +17,29 @@ function usuarioControl(app) {
                 filename: './lib/gt.db',
                 driver: sqlite3.Database
             })
-            const result = await db.all('SELECT * FROM usuario')
+            const result = await db.all('SELECT * FROM clienteUsuario')
             response.send(result)
             db.close()
         })()
     }
+   
+    app.get('/login.html', bloquearAcessoLogin, (request, response) => {
+        response.sendFile(path.join(__dirname, '../login.html'));
+    });
+
+    // Outras rotas...
+
+    // Função middleware para bloquear o acesso à página de login se o usuário estiver autenticado
+    function bloquearAcessoLogin(request, response, next) {
+        if (request.session.loggedUser) {
+            console.log("Usuário já está logado. Redirecionando para o dashboard.");
+            response.redirect('/dashboardCliente.html');
+        } else {
+            // Se o usuário não estiver logado, permite o acesso à página de login
+            next();
+        }
+    }
+
     // FAzer o login
     app.post('/usuario/login', login)
     function login(request, response) {
@@ -34,25 +53,20 @@ function usuarioControl(app) {
 
             if (user) {
                 request.session.loggedUser = user;
-                response.cookie('userID', user.id, { maxAge: 3600000 });
-                response.send(`Usuário ${user.nome} logado com sucesso.`);
+                response.cookie('userID', user.id_usuario, { maxAge: 3600000 });
+                response.json({ message: `Usuário ${user.nome} logado com sucesso.`, redirect: '/dashboardCliente.html' });
+
             } else {
                 response.status(401).send('Credenciais inválidas.');
             }
         })()
     }
-    // dasboard rota segura
-    app.get('/dashboard', dashboard)
     function dashboard(request, response) {
-        (async () => {
-            if (request.session.loggedUser) {
-                response.send(`Bem-vindo ao dashboard, ${request.session.loggedUser.nome}!`);
-            } else {
-                response.status(401).send('Acesso não autorizado. Faça login primeiro.');
-            }
-        }
-        )()
+        // Se chegou aqui, o usuário está autenticado
+        response.send({ message: `Bem-vindo ao Dashboard, ${request.session.loggedUser.nome}!` });
     }
+
+
 
     // logout
     app.get('/logout', logout)
@@ -62,16 +76,17 @@ function usuarioControl(app) {
                 return response.status(500).send('Erro ao fazer logout.');
             }
             response.clearCookie('userID');
+            response.
             response.send('Logout realizado com sucesso.');
         });
     }
     // verificar login está ou nao logado
-    app.get('/verificar-login', verificarLogin)
+    app.get('/verificar-login', verificarLogin);
     function verificarLogin(request, response) {
         if (request.session.loggedUser) {
-            response.send(`O usuário ${request.session.loggedUser.nome} está logado.`);
+            response.json({ loggedUser: request.session.loggedUser });
         } else {
-            response.send('Nenhum usuário está logado.');
+            response.status(401).json({ message: 'Nenhum usuário está logado.', redirect: '/login.html' });
         }
     }
 
@@ -86,56 +101,6 @@ function usuarioControl(app) {
             })
             await db.run(`INSERT INTO clienteUsuario (nome,senha,email,cep,bairro,cidade, endereco,estado) VALUES (?,?,?,?,?,?,?,?)`, request.body.nome, request.body.senha, request.body.email, request.body.cep, request.body.bairro, request.body.cidade, request.body.endereco, request.body.estado)
             response.send(`Usuario: ${request.body.nome} inserida com sucesso.`)
-            db.close()
-        })()
-    }
-    app.delete('/usuario/id/:id', deletar)
-    function deletar(req, res) {
-        (async () => {
-            const db = await open({
-                filename: './lib/gt.db',
-                driver: sqlite3.Database
-            })
-            const result = await db.all('SELECT * FROM usuario where id like ?', req.params.id)
-            if (result != '') {
-                res.send(`Usuario: ${req.params.id} deletada`)
-                await db.run('DELETE from usuario WHERE id = ?', req.params.id)
-            } else {
-                res.send(`Usuario: ${req.params.id} não encontrada`)
-            }
-            db.close()
-        })()
-    }
-    app.put('/usuario/id/:id', Atualizar)
-    function Atualizar(req, res) {
-        (async () => {
-            const db = await open({
-                filename: './lib/gt.db',
-                driver: sqlite3.Database
-            })
-            const result = await db.all('SELECT * FROM usuario where id like ?', req.params.id)
-            if (result != '') {
-                res.send(`Usuário: ${req.params.id} Atualizada`)
-                await db.run('UPDATE usuario SET nome = ?, senha = ? WHERE id = ?', req.body.nome, req.body.senha, req.params.id)
-            } else {
-                res.send(`Usuário: ${req.params.id} não encontrada`)
-            }
-            db.close()
-        })()
-    }
-    app.get('/usuario/id/:id', buscarTitulo)
-    function buscarTitulo(req, res) {
-        (async () => {
-            const db = await open({
-                filename: './lib/gt.db',
-                driver: sqlite3.Database
-            })
-            const result = await db.all('SELECT * FROM usuario where id like ?', req.params.id)
-            if (result != '') {
-                res.send(result)
-            } else {
-                res.send(`Usuário com titulo: ${req.params.id} não encontrado`)
-            }
             db.close()
         })()
     }
