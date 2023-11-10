@@ -76,7 +76,6 @@ function usuarioControl(app) {
                 return response.status(500).send('Erro ao fazer logout.');
             }
             response.clearCookie('userID');
-            response.
             response.send('Logout realizado com sucesso.');
         });
     }
