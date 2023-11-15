@@ -27,9 +27,6 @@ function usuarioControl(app) {
         response.sendFile(path.join(__dirname, '../login.html'));
     });
 
-    // Outras rotas...
-
-    // Função middleware para bloquear o acesso à página de login se o usuário estiver autenticado
     function bloquearAcessoLogin(request, response, next) {
         if (request.session.loggedUser) {
             console.log("Usuário já está logado. Redirecionando para o dashboard.");
@@ -42,32 +39,30 @@ function usuarioControl(app) {
 
     // FAzer o login
     app.post('/usuario/login', login)
-    function login(request, response) {
-        (async () => {
-            const db = await open({
-                filename: './lib/gt.db',
-                driver: sqlite3.Database
-            })
-            const user = await db.get('SELECT * FROM clienteUsuario WHERE nome = ? AND senha = ?', request.body.nome, request.body.senha);
-            db.close();
+function login(request, response) {
+    (async () => {
+        const db = await open({
+            filename: './lib/gt.db',
+            driver: sqlite3.Database
+        })
+        let user;
+        if (request.body.tipo === 'empresa') {
+            user = await db.get('SELECT * FROM clienteEmpresa WHERE email = ? AND senha = ?', request.body.email, request.body.senha);
+        } else if (request.body.tipo === 'usuario') {
+            user = await db.get('SELECT * FROM clienteUsuario WHERE email = ? AND senha = ?', request.body.email, request.body.senha);
+        }
+        db.close();
 
-            if (user) {
-                request.session.loggedUser = user;
-                response.cookie('userID', user.id_usuario, { maxAge: 3600000 });
-                response.json({ message: `Usuário ${user.nome} logado com sucesso.`, redirect: '/dashboardCliente.html' });
-
-            } else {
-                response.status(401).send('Credenciais inválidas.');
-            }
-        })()
-    }
-    function dashboard(request, response) {
-        // Se chegou aqui, o usuário está autenticado
-        response.send({ message: `Bem-vindo ao Dashboard, ${request.session.loggedUser.nome}!` });
-    }
-
-
-
+        if (user) {
+            request.session.loggedUser = user;
+            response.cookie('userID', user.id_empresa || user.id_usuario, { maxAge: 3600000 });
+            response.json({ message: `Usuário logado com sucesso.`, redirect: user.id_empresa ? '/dashboardEmpresa.html' : '/dashboardCliente.html' });
+        } else {
+            response.status(401).send('Credenciais inválidas.');
+        }
+    })()
+}
+ 
     // logout
     app.get('/logout', logout)
     function logout(request, response) {
@@ -83,7 +78,8 @@ function usuarioControl(app) {
     app.get('/verificar-login', verificarLogin);
     function verificarLogin(request, response) {
         if (request.session.loggedUser) {
-            response.json({ loggedUser: request.session.loggedUser });
+            const redirectUrl = request.session.loggedUser.id_empresa ? '../dashboardEmpresa.html' : '../dashboardCliente.html';
+            response.json({ loggedUser: request.session.loggedUser, redirect: redirectUrl });
         } else {
             response.status(401).json({ message: 'Nenhum usuário está logado.', redirect: '/login.html' });
         }
