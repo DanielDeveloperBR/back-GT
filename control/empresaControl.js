@@ -3,12 +3,6 @@ import { open } from 'sqlite';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 function empresaControl(app) {
-    app.use(cookieParser());
-    app.use(session({
-        secret: 'chave braba',
-        resave: true,
-        saveUninitialized: false,
-    }));
     app.get('/empresa', exibir)
     function exibir(request, response) {
         (async () => {
@@ -22,18 +16,6 @@ function empresaControl(app) {
         })()
     }
    
-    // logout
-    app.get('/logout', logout)
-    function logout(request, response) {
-        request.session.destroy((err) => {
-            if (err) {
-                return response.status(500).send('Erro ao fazer logout.');
-            }
-            response.clearCookie('userID');
-            response.send('Logout realizado com sucesso.');
-        });
-    }
-
     // cadastrar um novo usuario
     app.post('/empresa', inserir)
     function inserir(request, response) {

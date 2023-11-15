@@ -1,0 +1,63 @@
+<!-- dashboard_empresa.ejs -->
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <title>Dashboard Empresa</title>
+</head>
+
+<body>
+    <header>
+        <a><img src="img/logo.png" alt="logo"></a>
+        <span id="hamb"><i class="fa-solid fa-bars"></i></span>
+        <nav>
+            <ul>
+                <li><a id="logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <h1>Dashboard Empresa</h1>
+
+    <div id="empresa-section">
+        <h1>Bem-vindo, <%= user.nome %>!</h1>
+        <p>Você está logado como empresa.</p>
+
+        <!-- Conteúdo específico para empresas -->
+        <form class="agenda">
+            <h1>Agendamento</h1>
+            <div class="form">
+                <input type="text" placeholder="Nome">
+                <input type="time" placeholder="Hora">
+                <input type="date" placeholder="Data">
+                <button>Agendar</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const botao = document.getElementById("logout")
+        botao.addEventListener("click", (e) => {
+            e.preventDefault()
+            fetch('http://localhost:3000/logout', {
+                method: 'GET'
+            })
+                .then((response) => response.text())
+                .then((data) => {
+                    console.log("Logout realizado com sucesso: " + data);
+                    window.location.href = "../index.html";
+                })
+                .catch((error) => {
+                    console.error("Erro ao fazer logout: " + error);
+                });
+        })
+    </script>
+    <script src="js/responsivo.js"></script>
+</body>
+
+</html>
