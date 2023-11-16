@@ -3,8 +3,8 @@ import { open } from 'sqlite';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import path from 'path';
-import ejs from 'ejs';
-
+import axios from 'axios';
+// import ejs from 'ejs';
 function usuarioControl(app) {
     const __filename = new URL(import.meta.url).pathname;
     const __dirname = path.dirname(__filename);
@@ -21,39 +21,36 @@ function usuarioControl(app) {
             httpOnly: true,
         },
     }));
-    app.get('/dashboard', verificarLogin, exibirDashboard);
-
+    app.get('/dashboard', verificaAutenticacao, exibirDashboard);
+    function verificaAutenticacao(req, res, next) {
+        if (req.session.loggedUser) {
+            next();
+        } else {
+            // O usuário não está autenticado, redirecione para a página de login
+            res.redirect('/login.html');
+        }
+    }
     function exibirDashboard(request, response) {
         if (request.session.loggedUser) {
+            // Usuário autenticado, redireciona para o dashboard
             const tipoUsuario = request.session.loggedUser.id_empresa ? 'empresa' : 'cliente';
-
-            response.render(`dashboard_${tipoUsuario}`, { user: request.session.loggedUser }); // Ajuste aqui
+            response.render(`dashboard_${tipoUsuario}`, { user: request.session.loggedUser});
         } else {
+            // Usuário não autenticado, redireciona para a página de login
             response.redirect('/login.html');
         }
     }
 
-    //verificar-login
-    app.get('/verificar-login', verificarLogin);
-
-    function verificarLogin(request, response, next) {
-        if (request.session.loggedUser) {
-            const tipoUsuario = request.session.loggedUser.id_empresa ? 'empresa' : 'cliente';
-            console.log('Usuário está logado. Tipo:', tipoUsuario);
-            next(); // Permite o acesso se o usuário estiver logado
-        } else {
-            console.log('Nenhum usuário está logado.');
-            if (request.originalUrl === '/dashboard') {
-                response.redirect('/login.html');
-            } else {
-                response.status(401).json({ message: 'Nenhum usuário está logado.', redirect: '/login.html' });
-            }
-        }
-    }
-
     // Endpoint /usuario/login
-    app.post('/usuario/login', login);
-
+    app.post('/usuario/login', verificaAutenticacaoLogin, login)
+    async function verificaAutenticacaoLogin(req, res, next) {
+        // Se o usuário já estiver autenticado, redireciona para o dashboard
+        if (req.session.loggedUser) {
+            return res.redirect('/dashboard');
+        }
+        next();
+    }
+    
     async function login(request, response) {
         try {
             const db = await open({
@@ -91,9 +88,24 @@ function usuarioControl(app) {
                 return response.status(500).send('Erro ao fazer logout.');
             }
             response.clearCookie('userID');
-            response.send('Logout realizado com sucesso.');
+            response.setHeader('Cache-Control', 'no-store');
+            response.redirect('/index.html')
+            console.log("saiu com sucesso: " + request.body)
         });
     }
+    app.get('/cep/:cep', async (req, res) => {
+        try {
+          const response = await axios.get(`https://viacep.com.br/ws/${req.params.cep}/json/`);
+          if (response.data && !response.data.erro) {
+            res.json(response.data);
+          } else {
+            res.status(404).json({ erro: 'CEP não encontrado' });
+          }
+        } catch (error) {
+          res.status(500).json({ erro: 'Erro ao buscar CEP' });
+        }
+      });
+      
 }
 
 export default usuarioControl;
