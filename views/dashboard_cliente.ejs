@@ -22,40 +22,44 @@
         </nav>
     </header>
 
-    <div id="empresa-section">
-        <h1>Bem-vindo, <%= user.nome %>!</h1>
-        <p>Você está logado como cliente.</p>
-
-        <!-- Conteúdo específico para empresas -->
-        <form class="agenda">
-            <h1>Agendamento</h1>
-            <div class="form">
-                <input type="text" placeholder="Nome">
-                <input type="time" placeholder="Hora">
-                <input type="date" placeholder="Data">
-                <button>Agendar</button>
-            </div>
-        </form>
-    </div>
-
+    <main>
+        <div id="empresa-section">
+            <h1>Bem-vindo, <%= user.nome %>!</h1>
+            <p>Você está logado como cliente.</p>
+        </div>
+        <section>
+            <h1>Empresas</h1>
+            <div></div>
+        </section>
+    </main>
     <script>
-        const botao = document.getElementById("logout")
-        botao.addEventListener("click", (e) => {
-            e.preventDefault()
-            fetch('http://localhost:3000/logout', {
-                method: 'GET'
-            })
-                .then((response) => response.text())
-                .then((data) => {
-                    console.log("Logout realizado com sucesso: " + data);
-                    window.location.href = "../index.html";
-                })
-                .catch((error) => {
-                    console.error("Erro ao fazer logout: " + error);
-                });
-        })
-    </script>
+        // No seu script JS dentro do HTML/EJS
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('http://localhost:3000/agendamentos');
+                const agendamentos = await response.json();
 
+                // Agora você tem os dados dos agendamentos, faça o que precisar com eles
+                console.log(agendamentos);
+
+                // Exemplo: Adicione os agendamentos à sua seção no HTML
+                const empresasSection = document.getElementById('empresa-section');
+                const agendamentosDiv = document.createElement('div');
+
+                agendamentos.forEach((agendamento) => {
+                    const agendamentoElement = document.createElement('p');
+                    agendamentoElement.textContent = `Nome: ${agendamento.nome}, Hora: ${agendamento.hora}, Data: ${agendamento.dia}/${agendamento.mes}`;
+                    agendamentosDiv.appendChild(agendamentoElement);
+                });
+
+                empresasSection.appendChild(agendamentosDiv);
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+            }
+        });
+
+    </script>
+    <script src="js/logout.js"></script>
     <script src="js/responsivo.js"></script>
 </body>
 

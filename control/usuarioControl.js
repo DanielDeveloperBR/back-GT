@@ -19,6 +19,7 @@ function usuarioControl(app) {
         cookie: {
             secure: false,
             httpOnly: true,
+            expires: 60000
         },
     }));
     app.get('/dashboard', verificaAutenticacao, exibirDashboard);
@@ -34,7 +35,7 @@ function usuarioControl(app) {
         if (request.session.loggedUser) {
             // Usuário autenticado, redireciona para o dashboard
             const tipoUsuario = request.session.loggedUser.id_empresa ? 'empresa' : 'cliente';
-            response.render(`dashboard_${tipoUsuario}`, { user: request.session.loggedUser});
+            response.render(`dashboard_${tipoUsuario}`, { user: request.session.loggedUser });
         } else {
             // Usuário não autenticado, redireciona para a página de login
             response.redirect('/login.html');
@@ -50,7 +51,6 @@ function usuarioControl(app) {
         }
         next();
     }
-    
     async function login(request, response) {
         try {
             const db = await open({
@@ -59,13 +59,30 @@ function usuarioControl(app) {
             });
             console.log('Dados recebidos:', request.body);
             let user;
+            const tipoUsuario = request.body.tipo;
+
             if (request.body.tipo === 'empresa') {
                 user = await db.get('SELECT * FROM clienteEmpresa WHERE email = ? AND senha = ?', request.body.email, request.body.senha);
+
+                if (user) {
+                    // Obtém o id_empresa da empresa
+                    const { id_empresa } = user;
+
+                    // Salva o id_empresa na sessão
+                    request.session.loggedUser = { ...user, id_empresa };
+
+                    response.cookie('userID', id_empresa, { maxAge: 3600000 });
+                    response.setHeader('Content-Type', 'application/json');
+                    response.render(`dashboard_${tipoUsuario}`, { user: request.session.loggedUser });
+                    return
+                } else {
+                    response.status(401).json({ error: 'Credenciais inválidas.' });
+                    return
+                }
             } else if (request.body.tipo === 'cliente') {
                 user = await db.get('SELECT * FROM clienteUsuario WHERE email = ? AND senha = ?', request.body.email, request.body.senha);
             }
             console.log('Usuário do tipo', request.body.tipo, ':', user);
-            const tipoUsuario = request.body.tipo;
             if (user) {
                 request.session.loggedUser = user;
                 response.cookie('userID', user.id_empresa || user.id_usuario, { maxAge: 3600000 });
@@ -95,17 +112,17 @@ function usuarioControl(app) {
     }
     app.get('/cep/:cep', async (req, res) => {
         try {
-          const response = await axios.get(`https://viacep.com.br/ws/${req.params.cep}/json/`);
-          if (response.data && !response.data.erro) {
-            res.json(response.data);
-          } else {
-            res.status(404).json({ erro: 'CEP não encontrado' });
-          }
+            const response = await axios.get(`https://viacep.com.br/ws/${req.params.cep}/json/`);
+            if (response.data && !response.data.erro) {
+                res.json(response.data);
+            } else {
+                res.status(404).json({ erro: 'CEP não encontrado' });
+            }
         } catch (error) {
-          res.status(500).json({ erro: 'Erro ao buscar CEP' });
+            res.status(500).json({ erro: 'Erro ao buscar CEP' });
         }
-      });
-      
+    });
+
 }
 
 export default usuarioControl;

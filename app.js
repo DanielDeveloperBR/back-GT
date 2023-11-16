@@ -5,6 +5,7 @@ import usuarioControl from './control/usuarioControl.js';
 import rootControl from './control/rootControl.js';
 import empresaControl from './control/empresaControl.js';
 import clienteControl from './control/clienteControl.js';
+import agendamento from './control/agendamento.js';
 import cors from 'cors';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -30,5 +31,6 @@ usuarioControl(app);
 rootControl(app);
 empresaControl(app)
 clienteControl(app)
+agendamento(app)
 
 export default app;
