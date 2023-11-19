@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <title>Documentação GT</title>
+</head>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --TelaFundo: #414BE5 !important;
+    --Navegacao: #1D2166 !important;
+    --Titulo: #444FF2 !important;
+    --Sessao: #2E36A6 !important;
+    --Botao: #3943CC !important;
+  }
+
+  body {
+    margin-top: 80px;
+    background-color: var(--TelaFundo);
+  }
+
+  nav {
+    background-color: var(--Navegacao);
+  }
+
+  h1,
+  h4,
+  .card {
+    background-color: var(--Titulo);
+    color: white;
+  }
+
+  .card-body {
+    background-color: var(--Sessao);
+    color: white;
+  }
+
+  .table-responsive {
+    background-color: var(--Botao);
+  }
+
+  th,
+  td {
+    color: white;
+  }
+
+  tr,
+  td,
+  th,
+  table {
+    padding: 5px;
+    border: 2px solid black;
+    width: 100%;
+  }
+
+  footer {
+    background-color: var(--Navegacao);
+  }
+</style>
+
+<body>
+  <nav class="navbar stick-top fixed-top p-2">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="http://localhost:3000">Documentação do GT</a>
+      <div class="d-grid gap-2 d-md-flex justify-content-md-end flex-nowrap d-flex">
+        <a href="http://localhost:3000/usuario" class="btn btn-primary">Usuário</a>
+        <a href="http://localhost:3000/tarefas" class="btn btn-primary">Tarefa</a>
+      </div>
+    </div>
+  </nav>
+  <!-- Rota /login -->
+  <h1 class="mt-2 text-center p-3 text-white">Documentação GT</h1>
+  <div class="card mt-3">
+    <h4 class="card-header">Rota /login</h4>
+    <div class="card-body">
+      <h5 class="card-title">Rota para fazer o login</h5>
+      <p class="card-text">Essa rota é para fazer o login do usuário do banco de dados com os atributos nome e senha.
+      </p>
+      <p class="card-text">Exemplo de utilização da rota:</p>
+      <pre><code class="language-http">POST /login</code></pre>
+      <pre><code class="language-json">{"nome":"daniel","senha":"123"}</code></pre>
+    </div>
+  </div>
+  <!-- Exemplo de Usuário Logado -->
+  <div class="card mt-4">
+    <div class="card-header">
+      <h4 class="card-title">Exemplo de Usuário Logado</h4>
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">Resposta após um login bem-sucedido</h5>
+      <p class="card-text">Aqui está um exemplo de resposta que você pode esperar após um login bem-sucedido:</p>
+      <pre><code class="language-json">{"message": "Login com sucesso"}</code></pre>
+
+      <h5 class="card-title">Resposta ao tentar acessar a URL sem fazer o login</h5>
+      <p class="card-text">Aqui está um exemplo de resposta que você pode esperar após tentar acessar a URL sem fazer o
+        login:</p>
+      <pre><code class="language-json">{"error": "Acesso não autorizado"}</code></pre>
+      <a href="http://localhost:3000/dashboard" class="btn btn-primary">Rota /dashboard</a>
+    </div>
+  </div>
+  <!-- Rota /logout -->
+  <div class="card mt-3">
+    <h4 class="card-header">Rota /logout</h4>
+    <div class="card-body">
+      <h5 class="card-title">Rota para fazer o logout</h5>
+      <p class="card-text">Essa rota é para fazer o logout do usuário autenticado.</p>
+      <p class="card-text">Exemplo de utilização da rota:</p>
+      <pre><code class="language-http">POST /logout</code></pre>
+      <pre><code class="language-json">{"message": "Desconectado com sucesso!"}</code></pre>
+      <form method="POST" action="http://localhost:3000/logout">
+        <button type="submit" class="btn btn-primary">Rota /logout</button>
+      </form>
+    </div>
+  </div>
+  <!-- Rota /usuario -->
+  <div class="card">
+    <h4 class="card-header">Rota /usuario</h4>
+    <div class="card-body">
+      <h5 class="card-title">Rota para listar todos os usuários cadastrados</h5>
+      <p class="card-text">Essa rota lista todos os usuários do banco de dados com os atributos id, nome e senha.</p>
+      <p class="card-text">Exemplo de utilização da rota /usuario:</p>
+      <pre><code class="language-http">GET /usuario</code></pre>
+      <pre><code class="language-json">[{"id": 1,"nome":"daniel","senha":"123"}, ...]</code></pre>
+      <a href="http://localhost:3000/usuario" class="btn btn-primary">Rota /usuario</a>
+    </div>
+  </div>
+  <!-- Rota para buscar por nome -->
+  <div class="card mt-3">
+    <h4 class="card-header">Rota /usuario/:nome</h4>
+    <div class="card-body">
+      <h5 class="card-title">Rota para buscar usuários por nome</h5>
+      <p class="card-text">Essa rota busca usuários do banco de dados por nome, listando os atributos nomes.
+        Caso não encontre o usuário com nome indicado, retorna uma mensagem com nome não encontrado.</p>
+      <p class="card-text">Exemplo de utilização da rota:</p>
+      <pre><code class="language-http">GET /usuario/<b>daniel</b></code></pre>
+      <pre><code class="language-json">[{"nome":"Daniel"}]</code></pre>
+      <!-- formulario para exibir o usuario -->
+      <form method="post" id="formUsuarioExibir">
+        <div class="input-group mb-1">
+          <span class="input-group-text" id="inputGroup-sizing-default">/usuario/:nome</span>
+          <input type="text" class="form-control" aria-label="Username" aria-describedby="basic-addon1"
+            name="nomeUsuario" id="nomeUsuario">
+          <button type="submit" class="btn btn-primary">Buscar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- Rota exibir usuarios apenas os nomes -->
+  <div class="card mt-3">
+    <div class="card-header">
+      <h5>Nomes</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class=" table-striped" id="usuarioExibir">
+          <thead>
+            <tr>
+              <th>Nome</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- script para exibir os nomes dos usuarios cadastrados -->
+  <script>
+    const formUsuarioExibir = document.getElementById('formUsuarioExibir');
+    const usuarioExibir = document.querySelector("#usuarioExibir tbody")
+    formUsuarioExibir.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const nomeUsuarioExibir = document.getElementById("nomeUsuario").value
+      if (nomeUsuarioExibir.trim() == "") {
+        alert("preencha um nome.")
+        return
+      }
+      try {
+        const response = await fetch(`http://localhost:3000/usuario/${nomeUsuarioExibir}`, {
+          method: "get",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        })
+        if (response.ok) {
+          usuarioExibir.innerHTML = ""
+          atualizarUsuarioExibir(nomeUsuarioExibir)
+        }
+      } catch (error) {
+        alert("Ocorreu um erro. Aguarde alguns instantes e tente novamente")
+      }
+    })
+
+    function atualizarTabelaExibir(nomeUsuario) {
+      atualizarUsuarioExibir(nomeUsuario);
+    }
+    function atualizarUsuarioExibir(nomeUsuario) {
+      fetch(`http://localhost:3000/usuario/${nomeUsuario}`)
+        .then(response => response.json())
+        .then(data => {
+          data.forEach((element) => {
+            const linhaUsuario = document.createElement("tr")
+            const usuario = document.createElement("td")
+            linhaUsuario.appendChild(usuario)
+            usuario.textContent = element.nome
+            usuarioExibir.appendChild(linhaUsuario)
+          })
+        })
+    }
+    atualizarTabelaExibir("daniel")
+  </script>
+  <!-- Rota para exibir /tarefas -->
+  <div class="card mt-3">
+    <h4 class="card-header">Rota /tarefas</h4>
+    <div class="card-body">
+      <h5 class="card-title">Rota para listar todas as tarefas cadastradas</h5>
+      <p class="card-text">Essa rota lista todas as tarefas do banco de dados com os atributos id, tarefa e data_hora.
+      </p>
+      <p class="card-text">Exemplo de utilização da rota:</p>
+      <pre><code class="language-http">GET /tarefas</code></pre>
+      <pre><code class="language-json">[{"id": 1,"tarefa":"Fazer compras","data_hora":"31-08-2023 14:30"}, ...]</code></pre>
+      <a href="http://localhost:3000/tarefas" class="btn btn-primary">Rota /tarefas</a>
+    </div>
+  </div>
+  <!-- Rota para buscar /tarefas/id/:id -->
+  <div class="card mt-3">
+    <h4 class="card-header">Rota /tarefas/id/:id</h4>
+    <div class="card-body">
+      <h5 class="card-title">Rota para buscar tarefa por ID</h5>
+      <p class="card-text">Essa rota busca uma tarefa do banco de dados pelo seu ID, retornando os atributos id, tarefa
+        e data_hora. Caso não encontre a tarefa com o ID indicado, retorna uma mensagem de tarefa não encontrada.</p>
+      <p class="card-text">Exemplo de utilização da rota:</p>
+      <pre><code class="language-http">GET /tarefas/id/<b>1</b></code></pre>
+      <pre><code class="language-json">{"id": 1,"tarefa":"beber aguaaa","data_hora":"08/08/2023, 20:30"}</code></pre>
+      <a href="http://localhost:3000/tarefas/id/1" class="btn btn-primary">Buscar Tarefa</a>
+    </div>
+  </div>
+  <!-- Rota /tarefas (Adicionar Tarefa) -->
+  <div class="card mt-3">
+    <h4 class="card-header">Rota /tarefas (Adicionar Tarefa)</h4>
+    <div class="card-body">
+      <h5 class="card-title">Rota para adicionar uma nova tarefa</h5>
+      <p class="card-text">Essa rota permite adicionar uma nova tarefa ao banco de dados com os atributos tarefa e
+        data_hora.</p>
+      <p class="card-text">Exemplo de utilização da rota:</p>
+      <pre><code class="language-http">POST /tarefas</code></pre>
+      <pre><code class="language-json">{"tarefa": "Descrição da nova tarefa","data_hora": "2023-09-01 10:00"}</code></pre>
+      <form id="adicionarTarefaForm" method="post">
+        <div class="mb-3">
+          <label for="novaTarefa" class="form-label">Nova Tarefa</label>
+          <input type="text" class="form-control" id="novaTarefa" name="novaTarefa">
+          <label for="novaData" class="form-label">Nova Data</label>
+          <input type="date" class="form-control" id="novaData" name="novaData" max="2023-12-31">
+          <label for="novaHora" class="form-label">Nova Hora</label>
+          <input type="time" class="form-control" id="novaHora" name="novaHora" max="23:59">
+        </div>
+        <button type="submit" class="btn btn-primary">Adicionar Tarefa</button>
+        <a href="http://localhost:3000/tarefas" class="btn btn-primary">Rota /tarefas</a>
+      </form>
+    </div>
+  </div>
+  <!-- Script para adicionar tarefas -->
+  <script>
+    const formAddTarefa = document.getElementById("adicionarTarefaForm")
+    formAddTarefa.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const novaTarefa = formAddTarefa.novaTarefa.value
+      const novaData = formAddTarefa.novaData.value
+      const novaHora = formAddTarefa.novaHora.value
+      if (novaTarefa.trim() == "" || novaData.trim() == "" || novaHora.trim() == "") {
+        alert("preencha os campos!")
+        return
+      }
+      const dataBR = formatarDataHoraBR(novaData, novaHora);
+
+      fetch("http://localhost:3000/tarefas", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": "Insomnia/2023.5.5"
+        },
+        body: JSON.stringify({
+          "tarefa": novaTarefa,
+          "data_hora": dataBR
+        })
+      })
+        .catch(() => {
+          alert("Erro ao adicionar tarefa.");
+        });
+    });
+
+    function formatarDataHoraBR(data, hora) {
+      const dataHora = new Date(`${data}T${hora}`);
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+      return dataHora.toLocaleDateString('pt-BR', options);
+    }
+  </script>
+  <!-- Rota /tarefas/id/:id (Editar Tarefa) -->
+  <div class="card mt-3">
+    <h4 class="card-header">Rota /tarefas/id/:id (Editar Tarefa)</h4>
+    <div class="card-body">
+      <h5 class="card-title">Rota para editar uma tarefa</h5>
+      <p class="card-text">Essa rota permite editar os atributos de uma tarefa existente no banco de dados.</p>
+      <!-- formulario -->
+      <form id="editarTarefa" method="post">
+        <div class="mb-3">
+          <label for="tarefa" class="form-label">Nova Tarefa</label>
+          <input type="text" class="form-control" id="tarefa" name="tarefa">
+        </div>
+        <div class="mb-3">
+          <label for="data" class="form-label">Nova Data</label>
+          <input type="date" class="form-control" id="data" name="data" max="2023-12-31">
+          <label for="hora" class="form-label">Nova Hora</label>
+          <input type="time" class="form-control" id="hora" name="hora" max="23:59">
+        </div>
+        <button type="submit" class="btn btn-primary">Editar Tarefa</button>
+      </form>
+    </div>
+  </div>
+  <!-- Rota exibir tarrefas -->
+  <div class="card mt-3">
+    <div class="card-header">
+      <h4>Tarefas editadas</h4>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class=" table-striped" id="tabelaExibir">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tarefa</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- Rota /tarefas/id/:id (Deletar Tarefa) -->
+  <div class="card mt-3">
+    <h4 class="card-header">Rota /tarefas/id/:id (Deletar Tarefa)</h4>
+    <div class="card-body">
+      <h5 class="card-title">Rota para deletar uma tarefa por ID</h5>
+      <p class="card-text">Essa rota permite deletar uma tarefa do banco de dados pelo seu ID.</p>
+      <p class="card-text">Exemplo de utilização da rota:</p>
+      <pre><code class="language-http">DELETE /tarefas/id/<b>1</b></code></pre>
+      <pre><code class="language-json">{"message": "Tarefa deletada com sucesso"}</code></pre>
+      <a href="http://localhost:3000/tarefas/id/1" class="btn btn-danger">Deletar Tarefa</a>
+    </div>
+  </div>
+  <!-- script para editar tarefas -->
+  <script>
+    const form = document.querySelector('#editarTarefa')
+    const tabelaExibir = document.querySelector('#tabelaExibir tbody');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const tarefa = form.tarefa.value
+      const data = form.data.value
+      const hora = form.hora.value
+      if (tarefa.trim() == "" || data.trim() == "" || hora.trim() == "") {
+        alert("preencha os campos em brancos!")
+        return
+      }
+      try {
+        const dataHoraFormatadaBR = formatarDataHoraBR(data, hora)
+        const response = await fetch("http://localhost:3000/tarefas/id/1", {
+          method: "put",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            "tarefa": tarefa, "data_hora": dataHoraFormatadaBR
+          })
+        })
+        if (response.ok) {
+          tabelaExibir.innerHTML = ""
+          atualizarTabelaExibir()
+        } else {
+          alert("Erro ao adicionar tarefa.");
+        }
+      } catch (error) {
+        alert("Ocorreu um erro. Entre em contato com o suporte")
+      }
+    })
+
+    function atualizarTabelaExibir() {
+      const options = { method: 'GET' };
+      fetch('http://localhost:3000/tarefas/id/1', options)
+        .then(response => response.json())
+        .then(data => {
+          data.forEach((element) => {
+            const linha = document.createElement("tr");
+            const id = document.createElement("td");
+            const tarefaExibir = document.createElement("td");
+            const dataH = document.createElement("td");
+
+            linha.appendChild(id);
+            linha.appendChild(tarefaExibir);
+            linha.appendChild(dataH);
+
+            id.innerHTML = element.id;
+            tarefaExibir.innerHTML = element.tarefa;
+            dataH.innerHTML = element.data_hora;
+
+            tabelaExibir.appendChild(linha);
+          });
+        });
+    }
+    atualizarTabelaExibir()
+    function formatarDataHoraBR(data, hora) {
+      const dataHora = new Date(`${data}T${hora}`);
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+      return dataHora.toLocaleDateString('pt-BR', options);
+    }
+  </script>
+  <footer class="text-center p-3 text-white">&copy; Desenvolvido por Daniel</footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384"></script>
+</body>
+
+</html>

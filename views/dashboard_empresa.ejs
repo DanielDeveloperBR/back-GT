@@ -1,0 +1,100 @@
+<!-- dashboard_empresa.ejs -->
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <title>Dashboard Empresa</title>
+</head>
+
+<body>
+    <header>
+        <a><img src="img/logo.png" alt="logo"></a>
+        <span id="hamb"><i class="fa-solid fa-bars"></i></span>
+        <nav>
+            <ul>
+                <li><a id="logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <h1 data-id-empresa="<%= empresa.id_empresa %>">
+        <%= empresa.empresa %>
+    </h1>
+    
+
+    <div id="empresa-section">
+        <h1>Bem-vindo, <%= empresa.nome %>!</h1>
+        <p>Você está logado como empresa.</p>
+
+        <!-- Conteúdo específico para empresas -->
+        <form class="agenda">
+            <h1>Agendamento</h1>
+            <div class="form">
+                <label for="nome">Nome</label>
+                <input type="text" placeholder="Nome" name="nome">
+                <label for="hora">hora</label>
+                <input type="time" placeholder="Hora" name="hora">
+                <label for="data">data</label>
+                <input type="date" placeholder="Data" name="data">
+                <button type="submit">Agendar</button>
+            </div>
+        </form>
+    </div>
+    <!-- Agendamento -->
+    <script>
+        const form = document.querySelector('form');
+        const idClienteEmpresa = document.querySelector('h1').dataset.idEmpresa;
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nome = form.nome.value.trim();
+            const hora = form.hora.value.trim();
+            const data = form.data.value.trim();
+
+            if (nome === "" || hora === "" || data === "") {
+                alert("Preencha todos os campos");
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/agendamento', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        nome,
+                        hora,
+                        dia: new Date(data).getUTCDate(),
+                        mes: new Date(data).getUTCMonth() + 1,
+                        minuto: new Date(data).getUTCMinutes(),
+                        id_empresa: idClienteEmpresa,
+                    }),
+                });
+
+                if (response.ok) {
+                    alert('Agendamento realizado com sucesso!');
+                    // Você pode adicionar mais ações aqui, como limpar o formulário ou atualizar a lista de agendamentos.
+                } else {
+                    alert('Erro ao realizar agendamento');
+                }
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                alert('Erro ao realizar agendamento');
+            }
+        });
+
+    </script>
+
+
+    <script src="js/logout.js"></script>
+    <script src="js/responsivo.js"></script>
+</body>
+
+</html>
