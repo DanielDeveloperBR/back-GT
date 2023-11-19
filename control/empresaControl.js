@@ -1,7 +1,6 @@
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
-import session from 'express-session';
-import cookieParser from 'cookie-parser';
+import bcrypt from 'bcrypt'
 function empresaControl(app) {
     app.get('/empresa', exibir)
     function exibir(request, response) {
@@ -24,7 +23,8 @@ function empresaControl(app) {
                 filename: './lib/gt.db',
                 driver: sqlite3.Database
             })
-            await db.run(`INSERT INTO clienteEmpresa (nome,empresa,senha,email,cnpj,cep,bairro,cidade, endereco,estado) VALUES (?,?,?,?,?,?,?,?,?,?)`, request.body.nome, request.body.empresa, request.body.senha, request.body.email, request.body.cnpj, request.body.cep, request.body.bairro, request.body.cidade, request.body.endereco, request.body.estado)
+            const senhaCriptografada = await bcrypt.hash(request.body.senha, 10)
+            await db.run(`INSERT INTO clienteEmpresa (nome,empresa,senha,email,cnpj,cep,bairro,cidade, endereco,estado) VALUES (?,?,?,?,?,?,?,?,?,?)`, request.body.nome, request.body.empresa, senhaCriptografada, request.body.email, request.body.cnpj, request.body.cep, request.body.bairro, request.body.cidade, request.body.endereco, request.body.estado)
             response.send(`Usuario: ${request.body.empresa} inserida com sucesso.`)
             db.close()
         })()

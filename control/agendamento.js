@@ -15,22 +15,23 @@ function agendamento(app) {
         })()
     }
     app.get('/agendamentos', obterAgendamentos);
-
     async function obterAgendamentos(req, res) {
         try {
             const db = await open({
                 filename: './lib/gt.db',
                 driver: sqlite3.Database
             });
-            const idUsuario = req.session.loggedUser.id_usuario;
-            const agendamentos = await db.all(`SELECT * FROM agendamento WHERE id_empresa = (SELECT id_empresa FROM clienteEmpresa WHERE id_empresa = ?)`, idUsuario);
+            // const idUsuario = req.session.loggedUser.id_usuario;
+            const agendamentos = await db.all(`SELECT a.*, ce.nome AS nome_empresa FROM agendamento a JOIN clienteEmpresa ce ON a.id_empresa = ce.id_empresa`)
             res.json(agendamentos);
-            db.close()
+            db.close();
         } catch (error) {
             console.error('Erro ao obter agendamentos:', error);
             res.status(500).json({ error: 'Erro interno ao obter agendamentos.' });
         }
     }
+
+
 
     // Agendamento
     app.post('/agendamento', inserir);
@@ -41,9 +42,9 @@ function agendamento(app) {
                 driver: sqlite3.Database
             });
 
-            const { nome, dia, mes, hora, minuto, id_cliente_empresa } = request.body;
+            const { nome, dia, mes, hora, minuto, id_empresa } = request.body;
 
-            await db.run('INSERT INTO agendamento (nome, dia, mes, hora, minuto, id_empresa) VALUES (?, ?, ?, ?, ?, (SELECT id_empresa FROM clienteEmpresa WHERE id_empresa = ?))', nome, dia, mes, hora, minuto, id_cliente_empresa);
+            await db.run('INSERT INTO agendamento (nome, dia, mes, hora, minuto, id_empresa) VALUES (?, ?, ?, ?, ?, (SELECT id_empresa FROM clienteEmpresa WHERE id_empresa = ?))', nome, dia, mes, hora, minuto, id_empresa);
 
             response.send(`Agendamento: ${nome} inserido com sucesso.`);
             db.close();

@@ -23,13 +23,12 @@
     </header>
 
     <main>
-        <div id="empresa-section">
-            <h1>Bem-vindo, <%= user.nome %>!</h1>
-            <p>Você está logado como cliente.</p>
-        </div>
+        <h1>Bem-vindo, <%= user.nome %>!</h1>
+        <p>Você está logado como cliente.</p>
         <section>
-            <h1>Empresas</h1>
-            <div></div>
+            <div id="empresa-section">
+                <h1>Empresas</h1>
+            </div>
         </section>
     </main>
     <script>
@@ -40,16 +39,28 @@
                 const agendamentos = await response.json();
 
                 // Agora você tem os dados dos agendamentos, faça o que precisar com eles
-                console.log(agendamentos);
+                console.log("resposta json do agendamentos: ", agendamentos);
 
                 // Exemplo: Adicione os agendamentos à sua seção no HTML
                 const empresasSection = document.getElementById('empresa-section');
                 const agendamentosDiv = document.createElement('div');
 
                 agendamentos.forEach((agendamento) => {
-                    const agendamentoElement = document.createElement('p');
-                    agendamentoElement.textContent = `Nome: ${agendamento.nome}, Hora: ${agendamento.hora}, Data: ${agendamento.dia}/${agendamento.mes}`;
-                    agendamentosDiv.appendChild(agendamentoElement);
+                    console.log("pegando cada agendamento: ", agendamento)
+                    const container = document.createElement('div')
+                    const nomeDiv = document.createElement('p')
+                    const horaDiv = document.createElement('p')
+                    const dataDiv = document.createElement('p')
+                    const nomeEmpresaDiv = document.createElement('p')
+                    nomeDiv.textContent = "Nome: " + agendamento.nome
+                    horaDiv.textContent = "Hora: " + agendamento.hora
+                    nomeEmpresaDiv.textContent = "Empresa: " + agendamento.nome_empresa
+                    dataDiv.textContent = `Data: ${agendamento.dia}/${agendamento.mes}`
+                    container.appendChild(nomeEmpresaDiv)
+                    container.appendChild(nomeDiv)
+                    container.appendChild(horaDiv)
+                    container.appendChild(dataDiv)
+                    agendamentosDiv.append(container)
                 });
 
                 empresasSection.appendChild(agendamentosDiv);
