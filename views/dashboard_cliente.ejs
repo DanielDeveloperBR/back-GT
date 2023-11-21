@@ -33,14 +33,9 @@
                 const response = await fetch('/agendamentos');
                 const agendamentos = await response.json();
 
-                // Agora você tem os dados dos agendamentos, faça o que precisar com eles
-                console.log("resposta json do agendamentos: ", agendamentos);
-
-                // Exemplo: Adicione os agendamentos à sua seção no HTML
                 const empresasSection = document.getElementById('empresa-section');
 
                 agendamentos.forEach((agendamento) => {
-                    console.log("pegando cada agendamento: ", agendamento)
                     const container = document.createElement('div')
                     const nomeDiv = document.createElement('h2')
                     const horaDiv = document.createElement('p')
@@ -57,7 +52,6 @@
                     empresasSection.append(container)
                 });
 
-                empresasSection.appendChild(agendamentosDiv);
             } catch (error) {
                 console.error('Erro na requisição:', error);
             }

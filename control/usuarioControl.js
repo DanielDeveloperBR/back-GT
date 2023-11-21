@@ -85,7 +85,7 @@ function usuarioControl(app) {
                     request.session.loggedUser = { ...user, id_empresa };
 
                     response.cookie('userID', id_empresa, { maxAge: 3600000 });
-                    response.setHeader('Content-Type', 'application/json');
+                    // response.setHeader('Content-Type', 'application/json');
                     response.render(`dashboard_${tipoUsuario}`, { user: request.session.loggedUser });
                     return
                 } else {
@@ -100,7 +100,7 @@ function usuarioControl(app) {
             if (user && await bcrypt.compare(request.body.senha, user.senha)) {
                 request.session.loggedUser = user;
                 response.cookie('userID', user.id_usuario, { maxAge: 3600000 });
-                response.setHeader('Content-Type', 'application/json');
+                // response.setHeader('Content-Type', 'application/json');
                 response.render(`dashboard_${tipoUsuario}`, { user: request.session.loggedUser });
             } else {
                 await new Promise(resolve => setTimeout(resolve, 1000));
@@ -120,7 +120,7 @@ function usuarioControl(app) {
                 return response.status(500).send('Erro ao fazer logout.');
             }
             response.clearCookie('userID');
-            response.setHeader('Cache-Control', 'no-store');
+            // response.setHeader('Cache-Control', 'no-store');
             response.redirect('/index.html')
             console.log("saiu com sucesso: " + request.body)
         });
