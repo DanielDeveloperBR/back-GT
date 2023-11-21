@@ -1,5 +1,3 @@
-<!-- dashboard_empresa.ejs -->
-
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -25,17 +23,14 @@
     <main>
         <h1>Bem-vindo, <%= user.nome %>!</h1>
         <p>Você está logado como cliente.</p>
-        <section>
-            <div id="empresa-section">
-                <h1>Empresas</h1>
-            </div>
+        <section class="agendamentos" id="empresa-section">
         </section>
     </main>
     <script>
         // No seu script JS dentro do HTML/EJS
         window.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await fetch('http://localhost:3000/agendamentos');
+                const response = await fetch('/agendamentos');
                 const agendamentos = await response.json();
 
                 // Agora você tem os dados dos agendamentos, faça o que precisar com eles
@@ -43,12 +38,11 @@
 
                 // Exemplo: Adicione os agendamentos à sua seção no HTML
                 const empresasSection = document.getElementById('empresa-section');
-                const agendamentosDiv = document.createElement('div');
 
                 agendamentos.forEach((agendamento) => {
                     console.log("pegando cada agendamento: ", agendamento)
                     const container = document.createElement('div')
-                    const nomeDiv = document.createElement('p')
+                    const nomeDiv = document.createElement('h2')
                     const horaDiv = document.createElement('p')
                     const dataDiv = document.createElement('p')
                     const nomeEmpresaDiv = document.createElement('p')
@@ -60,7 +54,7 @@
                     container.appendChild(nomeDiv)
                     container.appendChild(horaDiv)
                     container.appendChild(dataDiv)
-                    agendamentosDiv.append(container)
+                    empresasSection.append(container)
                 });
 
                 empresasSection.appendChild(agendamentosDiv);
