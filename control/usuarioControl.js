@@ -40,7 +40,6 @@ function usuarioControl(app) {
             response.redirect('/login.html');
         }
     }
-
     // Endpoint /usuario/login
     app.post('/usuario/login', verificaAutenticacaoLogin, login)
     async function verificaAutenticacaoLogin(req, res, next) {
@@ -108,4 +107,4 @@ function usuarioControl(app) {
       
 }
 
-export default usuarioControl;
+export default usuarioControl
