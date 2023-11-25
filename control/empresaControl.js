@@ -19,19 +19,14 @@ function empresaControl(app) {
     // Filtrar e só aceita essas extensoes
     const fileFilter = (req, file, cb) => {
         const allowedExtensions = ['.jpg', '.jpeg', '.png']
-
         if (!allowedExtensions.includes(path.extname(file.originalname).toLowerCase())) {
             return cb(new Error('Apenas imagens com .jpg, .jpeg, ou .png .'))
         }
-
         cb(null, true);
     };
 
     // Limite máximo do tamanho dos arquivos
-    const limits = {
-        // Limite de 1MB
-        fileSize: 1024 * 1024 * 50
-    };
+    const limits = {fileSize: 1024 * 1024 * 50}
     // Fazendo a conversão para salvar a imagem com a extensão
     const storage = multer.diskStorage({
         destination: 'uploads/',
@@ -39,12 +34,12 @@ function empresaControl(app) {
             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
             cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
         }
-    });
+    })
     // const upload = multer({ storage: storage })
     const upload = multer({
         storage: storage,
         fileFilter: fileFilter,
-    });
+    })
     // cadastrar um novo usuario
     app.post('/empresa', upload.single('imagemPerfil'), inserir)
     function inserir(request, response) {
@@ -73,8 +68,6 @@ function empresaControl(app) {
             }
         })();
     }
-
-
     // Pagina de agendamento da empresa
     app.get('/agendamento', mostrarHTML)
     function mostrarHTML(req, res) {
@@ -88,6 +81,5 @@ function empresaControl(app) {
             res.redirect('/login.html');  // Substitua 'login.html' pela sua página de login
         }
     }
-
 }
 export default empresaControl

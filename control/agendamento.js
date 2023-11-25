@@ -16,6 +16,8 @@ function agendamento(app) {
     //         db.close()
     //     })()
     // }
+
+
     app.get('/agendamentos', obterAgendamentos);
     async function obterAgendamentos(req, res) {
         try {
@@ -32,8 +34,6 @@ function agendamento(app) {
             res.status(500).json({ error: 'Erro interno ao obter agendamentos.' });
         }
     }
-
-   
 
     // Agendamento
     app.post('/agendamento', inserir);
@@ -73,7 +73,6 @@ function agendamento(app) {
         fileSize: 1024 * 1024 * 50
     };
     
- 
     // Fazendo a conversão para salvar a imagem com a extensão
     const storage = multer.diskStorage({
         destination: 'uploads/',
@@ -88,7 +87,6 @@ function agendamento(app) {
         storage: storage,
         fileFilter: fileFilter,
     });
-
     // Causa o usuario queira colocar mais de uma foto
     // const upload = multer({ storage })
     // const maxFotos = 3;
@@ -110,13 +108,18 @@ function agendamento(app) {
         //     driver: sqlite3.Database
         // });
         // await db.run('INSERT INTO clienteEmpresa (imagemPerfil) VALUES (?), ',imagem)
-
-        
         
         // Envie uma resposta para o cliente
         // res.json({ imagePath: '/uploads/' + imagem.filename });
         res.json({imagePath: imagemPerfil})
 
+    })
+       // Rota para receber os uploads de imagens do cliente
+       app.post('/uploadsClientes', upload.single('imagem'), async (req, res) => {
+        const imagemPerfil = request.file ? request.file.path : null
+        const imagem = req.file;
+        console.log('Imagem recebida:', imagem);
+        res.json({imagePath: imagemPerfil})
     })
 
 }

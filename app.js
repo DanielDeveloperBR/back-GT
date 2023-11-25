@@ -15,6 +15,7 @@ const __dirname = dirname(__filename);
 const app = express()
 app.use(express.static(path.join(__dirname, 'views')));
 app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static('uploadsClientes'));
 app.use(bodyParser.json({ limit: '300mb' }));
 app.use(express.urlencoded({ extended: true, limit: '300mb' }));
 app.use(cors({

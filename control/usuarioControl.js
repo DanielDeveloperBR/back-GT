@@ -22,8 +22,6 @@ function usuarioControl(app) {
     // para windows
     app.set('views', path.join(__dirname, '..', 'views'));
 
-    console.log('Caminho absoluto para o diretório de views:', path.join(__dirname, '../views'));
-
     app.use(cookieParser());
     app.use(session({
         secret: 'chave braba',
