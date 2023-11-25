@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsivo.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="fontawesome-free-6.4.2-web/css/fontawesome.css">
+    <title>Dashboard Empresa</title>
+</head>
+<style>
+    body{
+        background-image: linear-gradient(90deg, rgb(26, 26, 231), transparent);
+    }
+</style>
+<body>
+    <header>
+        <a href="/dashboard" target="_self"><img src="<%= user.imagemPerfil %>" alt="logo" id="perfil"></a>
+        <span id="hamb"><i class="fa-solid fa-bars"></i></span>
+        <nav>
+            <ul>
+                <li><a id="logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div id="empresa-section">
+
+        <!-- Conteúdo específico para empresas -->
+        <form class="agenda">
+            <h1>Agendamento</h1>
+            <div class="form">
+                <label for="nome">Nome</label>
+                <input type="text" placeholder="Nome" name="nome">
+                <label for="hora">hora</label>
+                <input type="time" placeholder="Hora" name="hora">
+                <label for="data">data</label>
+                <input type="date" placeholder="Data" name="data">
+                <button type="submit">Agendar</button>
+            </div>
+        </form>
+    </div>
+    <script defer src="fontawesome-free-6.4.2-web/js/all.js"></script>
+    <!-- Agendamento -->
+    <script>
+        const form = document.querySelector('form');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nome = form.nome.value.trim();
+            const hora = form.hora.value.trim();
+            const data = form.data.value.trim();
+
+            if (nome === "" || hora === "" || data === "") {
+                alert("Preencha todos os campos");
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/agendamento', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        nome,
+                        hora,
+                        dia: new Date(data).getUTCDate(),
+                        mes: new Date(data).getUTCMonth() + 1,
+                        minuto: new Date(data).getUTCMinutes(),
+                        // id_empresa: idClienteEmpresa,
+                    }),
+                });
+
+                if (response.ok) {
+                    alert('Agendamento realizado com sucesso!');
+                    // Você pode adicionar mais ações aqui, como limpar o formulário ou atualizar a lista de agendamentos.
+                } else {
+                    alert('Erro ao realizar agendamento');
+                }
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                alert('Erro ao realizar agendamento');
+            }
+        });
+
+    </script>
+    <script src="js/logout.js"></script>
+    <script src="js/responsivo.js"></script>
+</body>
+
+</html>
