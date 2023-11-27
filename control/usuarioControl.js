@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import path from 'path';
 import axios from 'axios';
 import bcrypt from 'bcrypt'
-// import ejs from 'ejs';
+import ejs from 'ejs';
 function usuarioControl(app) {
     // para linux
     // const __filename = new URL(import.meta.url).pathname;
@@ -16,10 +16,10 @@ function usuarioControl(app) {
     // para windows
     const __dirname = path.dirname(__filename).replace(/^\/([A-Z]:)/, '$1');
 
-    app.set('view engine', 'ejs');
     // para linux
     // app.set('views', path.join(__dirname, '../views'));
     // para windows
+    app.set('view engine', 'ejs');
     app.set('views', path.join(__dirname, '..', 'views'));
 
     app.use(cookieParser());
@@ -46,7 +46,10 @@ function usuarioControl(app) {
         if (request.session.loggedUser) {
             // Usuário autenticado, redireciona para o dashboard
             const tipoUsuario = request.session.loggedUser.id_empresa ? 'empresa' : 'cliente';
-            response.render(`dashboard_${tipoUsuario}`, { user: request.session.loggedUser });
+            // Dentro da função login
+            response.render(`dashboard_${tipoUsuario}.ejs`, { user: request.session.loggedUser });
+
+
         } else {
             // Usuário não autenticado, redireciona para a página de login
             response.redirect('/login.html');
@@ -74,7 +77,7 @@ function usuarioControl(app) {
             if (request.body.tipo === 'empresa') {
                 user = await db.get('SELECT * FROM clienteEmpresa WHERE email = ?', request.body.email);
 
-                if (user && await bcrypt.compare(request.body.senha, user.senha)) {
+                if (user && (await bcrypt.compare(request.body.senha, user.senha))) {
                     // Obtém o id_empresa da empresa
                     const { id_empresa } = user;
 
@@ -94,7 +97,7 @@ function usuarioControl(app) {
                 user = await db.get('SELECT * FROM clienteUsuario WHERE email = ?', request.body.email)
             }
             console.log('Usuário do tipo', request.body.tipo, ':', user);
-            if (user && await bcrypt.compare(request.body.senha, user.senha)) {
+            if (user && (await bcrypt.compare(request.body.senha, user.senha))) {
                 request.session.loggedUser = user;
                 response.cookie('userID', user.id_usuario, { maxAge: 3600000 });
                 // response.setHeader('Content-Type', 'application/json');
@@ -110,18 +113,17 @@ function usuarioControl(app) {
     }
     //logout
     app.get('/logout', logout);
-
     function logout(request, response) {
         request.session.destroy((err) => {
             if (err) {
                 return response.status(500).send('Erro ao fazer logout.');
             }
             response.clearCookie('userID');
-            // response.setHeader('Cache-Control', 'no-store');
             response.redirect('/index.html')
-            console.log("saiu com sucesso: " + request.body)
+            console.log("saiu com sucesso: " + request.session)
         });
     }
+    // Api do cep
     app.get('/cep/:cep', async (req, res) => {
         try {
             const response = await axios.get(`https://viacep.com.br/ws/${req.params.cep}/json/`);

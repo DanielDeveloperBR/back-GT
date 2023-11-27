@@ -3,6 +3,17 @@ import { open } from 'sqlite';
 import bcrypt from 'bcrypt'
 import multer from 'multer';
 import path from 'path';
+
+// async function verificarDisponibilidade(db, idAgendamento) {
+
+//     const count = await db.get(`
+//         SELECT COUNT(*) as count
+//         FROM agendamento
+//         WHERE id_agendamento = ? AND status_reserva = 0
+//     `, idAgendamento);
+
+//     return count.count > 0;
+// }
 function clienteControl(app) {
     // Filtrar e só aceita essas extensoes
     const fileFilter = (req, file, cb) => {
@@ -29,14 +40,12 @@ function clienteControl(app) {
     });
     // Rota para receber os uploads de imagens do cliente
     app.post('/uploadsClientes', upload.single('imagem'), async (req, res) => {
-        const imagemPerfil = request.file ? request.file.path : null
+        const imagemPerfil = req.file ? req.file.path : null
         const imagem = req.file;
         console.log('Imagem recebida:', imagem);
         res.json({ imagePath: imagemPerfil })
     })
-
-
-
+   
     // cadastrar um novo usuario
     app.post('/usuario', upload.single('imagemPerfil'), inserir)
     function inserir(request, response) {
@@ -55,26 +64,13 @@ function clienteControl(app) {
                     // Se não houver imagemPerfil, trate conforme necessário (por exemplo, forneça um valor padrão ou retorne um erro)
                     return response.status(422).send({ error: 'ImagemPerfil não fornecido' })
                 }
-                await db.run(`INSERT INTO clienteUsuario (nome,senha,email,cep,bairro,cidade, endereco,estado, imagemPerfil) VALUES (?,?,?,?,?,?,?,?,?)`,
-                    request.body.nome, senhaCriptografada, request.body.email, request.body.cep, request.body.bairro, request.body.cidade, request.body.endereco, request.body.estado, imagemPerfil)
+                await db.run(`INSERT INTO clienteUsuario (nome,senha,email,cep,bairro,cidade, endereco,estado, imagemPerfil) VALUES (?,?,?,?,?,?,?,?,?)`, request.body.nome, senhaCriptografada, request.body.email, request.body.cep, request.body.bairro, request.body.cidade, request.body.endereco, request.body.estado, imagemPerfil)
                 response.send(`Usuario: ${request.body.nome} inserido com sucesso.`);
                 db.close();
             } catch (error) {
                 console.error('Erro:', error);
                 response.status(500).send('Erro interno no servidor.');
             }
-        })();
-    }
-    app.get('/usuario', exibir)
-    function exibir(request, response) {
-        (async () => {
-            const db = await open({
-                filename: './lib/gt.db',
-                driver: sqlite3.Database
-            })
-            const result = await db.all('SELECT * FROM clienteUsuario')
-            response.send(result)
-            db.close()
         })()
     }
 }
