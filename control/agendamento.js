@@ -7,10 +7,7 @@ import nodemailer from 'nodemailer';
 // Verificar a disponibilidade para reservar
 async function verificarDisponibilidade(db, idEmpresa, hora, minuto) {
     // Altere a consulta SQL na função verificarDisponibilidade
-    const count = await db.get(`
-SELECT COUNT(id_agendamento) as count
-FROM agendamento
-WHERE id_empresa = ? AND hora = ? AND minuto = ? AND status_reserva = 0
+    const count = await db.get(`SELECT COUNT(id_agendamento) as count FROM agendamento WHERE id_empresa = ? AND hora = ? AND minuto = ? AND status_reserva = 0
 `, idEmpresa, hora, minuto);
 
 
@@ -259,7 +256,50 @@ function agendamento(app, wss) {
             console.error('Erro ao fazer reserva:', error);
             res.status(500).json({ success: false, error: 'Erro interno ao fazer reserva.' });
         }
-    });
+    })
+
+    // Rota para a empresa negar a reserva
+    app.put('/reserva/negada', async (req, res) => {
+        const idAgendamento = req.body.idAgendamento;
+
+        try {
+            const db = await open({
+                filename: './lib/gt.db',
+                driver: sqlite3.Database,
+            });
+
+            // Verificar se o horário está disponível para reserva
+            const horarioDisponivel = await verificarDisponibilidade(db, idAgendamento);
+
+            if (horarioDisponivel) {
+                // Atualizar o agendamento para marcado como reservado pelo cliente
+                await db.run('UPDATE agendamento SET status_reserva = 0 WHERE id_agendamento = ?', idAgendamento)
+
+                res.json({ success: true, message: 'Negado a reserva com sucesso.' });
+            } else {
+                res.json({ success: false, error: 'Horário não disponível. Escolha outro horário.' });
+            }
+
+            await db.close();
+        } catch (error) {
+            console.error('Erro ao fazer reserva:', error);
+            res.status(500).json({ success: false, error: 'Erro interno ao fazer reserva.' });
+        }
+    })
+    app.get('/reserva/negada', async (req, res) => {
+        try {
+            const db = await open({
+                filename: './lib/gt.db',
+                driver: sqlite3.Database,
+            });
+            const enviar = await db.get('SELECT * FROM agendamento')
+            res.status(200).json({ mensagem: "foi negado a sua reserva", notificacao: enviar })
+            await db.close();
+        } catch (error) {
+            console.error('Erro ao fazer reserva:', error);
+            res.status(500).json({ success: false, error: 'Erro interno ao fazer reserva.' });
+        }
+    })
 
     // Filtrar e só aceita essas extensoes
     const fileFilter = (req, file, cb) => {

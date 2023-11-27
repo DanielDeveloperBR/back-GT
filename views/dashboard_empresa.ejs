@@ -72,7 +72,6 @@
         let totalAgendamentos = 0;
         window.addEventListener('DOMContentLoaded', async () => {
             const userId = await <%- user.id_empresa %>;
-
             const empresasSection = document.getElementById('empresa-section')
             const response = await fetch(`/agendamento/${userId}`);
             const agendamentos = await response.json();
@@ -100,14 +99,38 @@
                 btnEditar.textContent = 'Editar'
                 btnRemover.textContent = 'Deletar'
                 btnRemover.style.backgroundColor = "#eb2020"
-                if (agendamento.status_reserva === 1){
-                    //criar um card com
-                    container.style.backgroundColor = 'yellow' 
+                if (agendamento.status_reserva === 1) {
+                    //criar um card se aceita ou nao
+                    container.style.backgroundColor = 'yellow'
+                    container.addEventListener("click", () => {
+                        const confirm = window.confirm("Você aceita a reserva ou não?")
+                        console.info(confirm)
+                        if (confirm === true) {
+                            alert('ok')
+                        } else {
+                            fetch('/reserva/negada', {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ "idAgendamento": agendamento.id_agendamento })
+                            })
+                                .then(response => response.json())
+                               
+                                .then(data => {
+                                    if (data){
+                                    container.style.backgroundColor = ''
+                                }
+                                    console.log(data)
+                                })
+                                .catch(error => {
+                                    console.error('Erro ao processar reserva negada:', error);
+                                });
+                        }
+                    })
                 }
-
                 // Evento editar o agendamento
                 btnEditar.addEventListener("click", () => {
-
                     const containerModal = document.createElement("div")
                     const modal = document.createElement("div")
                     const modalEditar = document.createElement("div")
@@ -190,11 +213,7 @@
                 })
             })
         })
-        function formatarDataHoraBR(data, hora) {
-            const dataHora = new Date(`${data}T${hora}`);
-            const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
-            return dataHora.toLocaleDateString('pt-BR', options);
-        }
+
         const ws = new WebSocket('ws://localhost:3000');
         ws.addEventListener('message', (event) => {
             const data = JSON.parse(event.data);

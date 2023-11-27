@@ -23,18 +23,44 @@
          </ul>
       </nav>
    </header>
-
-   <div class="notification-icon" id="notification-icon"><i class="fa-solid fa-bell"></i>0</div>
+   <i class="fa-solid fa-bell" id="notificacao"></i>
+   <div class="notification-icon" id="notification-icon">0</div>
    <main>
+   <div id="loading-spinner"></div>
+
       <h1>Bem-vindo, <%= user.nome %>!</h1>
       <p>Você está logado como cliente.</p>
       <section class="agendamentos" id="empresa-section">
          <!-- Conteúdo da seção de agendamentos -->
       </section>
    </main>
+   <script src="js/loading.js"></script>
    <script>
       // Seu script JS dentro do HTML/EJS
       window.addEventListener('DOMContentLoaded', async () => {
+         const reservationDeniedMessageShown = localStorage.getItem('reservationDeniedMessageShown');
+
+         if (!reservationDeniedMessageShown) {
+            // Se não foi mostrada, faz a requisição ao servidor
+            fetch('/reserva/negada', {
+               method: 'GET',
+               headers: {
+                  'Content-Type': 'application/json',
+               },
+            })
+               .then(response => response.json())
+               .then(data => {
+                  console.log(data)
+                  if (data.mensagem) {
+                     // Exibe a mensagem
+                     alert(data.mensagem);
+
+                     // Define o sinalizador para indicar que a mensagem foi exibida
+                     localStorage.setItem('reservationDeniedMessageShown', 'true');
+                  }
+               });
+         }
+
          try {
             const response = await fetch('/agendamentos');
             const agendamentos = await response.json();
@@ -66,91 +92,93 @@
 
             agendamentos.forEach((agendamento) => {
 
-               // if (agendamento.status_reserva === 0) {
-                  const container = document.createElement('div');
-                  const nomeDiv = document.createElement('h2');
-                  const horaDiv = document.createElement('p');
-                  const dataDiv = document.createElement('p');
-                  const nomeEmpresaDiv = document.createElement('p');
-                  const reservaBtn = document.createElement('button')
+               if (agendamento.status_reserva === 0) {
+               const container = document.createElement('div');
+               const nomeDiv = document.createElement('h2');
+               const horaDiv = document.createElement('p');
+               const dataDiv = document.createElement('p');
+               const nomeEmpresaDiv = document.createElement('p');
+               const reservaBtn = document.createElement('button')
 
-                  nomeDiv.textContent = "Nome: " + agendamento.nome;
-                  horaDiv.textContent = "Hora: " + agendamento.hora;
-                  nomeEmpresaDiv.textContent = "Empresa: " + agendamento.nome_empresa;
-                  dataDiv.textContent = `Data: ${agendamento.dia}/${agendamento.mes}`;
+               nomeDiv.textContent = "Nome: " + agendamento.nome;
+               horaDiv.textContent = "Hora: " + agendamento.hora;
+               nomeEmpresaDiv.textContent = "Empresa: " + agendamento.nome_empresa;
+               dataDiv.textContent = `Data: ${agendamento.dia}/${agendamento.mes}`;
 
-                  container.appendChild(nomeEmpresaDiv);
-                  container.appendChild(nomeDiv);
-                  container.appendChild(horaDiv);
-                  container.appendChild(dataDiv);
-                  container.appendChild(reservaBtn);
-                  empresasSection.append(container);
-                  totalAgendamentos++;
-                  if (agendamento.status_reserva === 1){
-                     container.style.backgroundColor = "gray"
-                  }
+               container.appendChild(nomeEmpresaDiv);
+               container.appendChild(nomeDiv);
+               container.appendChild(horaDiv);
+               container.appendChild(dataDiv);
+               container.appendChild(reservaBtn);
+               empresasSection.append(container);
+               totalAgendamentos++;
+               if (agendamento.status_reserva === 1) {
+                  container.style.backgroundColor = "gray"
+               }
 
-                  reservaBtn.textContent = 'Reservar'
-                  // Evento para reservar o agendamento
-                  reservaBtn.addEventListener('click', async () => {
-                     try {
-                        const reserva = await fetch('/reservar', {
+               reservaBtn.textContent = 'Reservar'
+               // Evento para reservar o agendamento
+               reservaBtn.addEventListener('click', async () => {
+                  try {
+                     const reserva = await fetch('/reservar', {
+                        method: 'POST',
+                        headers: {
+                           'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ idUsuario: user.id_usuario, idAgendamento: agendamento.id_agendamento }),
+                     });
+
+                     const resposta = await reserva.json();
+
+                     // Confirmação para enviar email
+                     if (resposta.success) {
+                        // Lógica para enviar notificação por e-mail
+                        const emailResponse = await fetch(`/enviar-notificacao-email/${agendamento.id_agendamento}`, {
                            method: 'POST',
-                           headers: {
-                              'Content-Type': 'application/json',
-                           },
-                           body: JSON.stringify({ idUsuario: user.id_usuario, idAgendamento: agendamento.id_agendamento }),
                         });
 
-                        const resposta = await reserva.json();
+                        const emailData = await emailResponse.json();
 
-                        // Confirmação para enviar email
-                        if (resposta.success) {
-                           // Lógica para enviar notificação por e-mail
-                           const emailResponse = await fetch(`/enviar-notificacao-email/${agendamento.id_agendamento}`, {
-                              method: 'POST',
-                           });
-
-                           const emailData = await emailResponse.json();
-
-                           if (emailData.success) {
-                              alert('Reservado com sucesso!');
-                           } else {
-                              alert('Erro ao enviar notificação por e-mail.');
-                           }
-                           const mensagemWebSocket = {
-                              action: 'agendamento',
-                              userId: user.id_usuario,
-                              companyId: agendamento.id_empresa,
-                              message: 'Novo agendamento realizado.',
-                              clientInfo: {
-                                 nome: user.nome,
-                                 imagemPerfil: user.imagemPerfil || 'caminho/do/seu/placeholder.png',
-                              },
-                           };
-
-                           // Envia mensagem para o WebSocket
-                           ws.send(JSON.stringify(mensagemWebSocket));
-                           container.remove();
+                        if (emailData.success) {
+                           alert('Reservado com sucesso!')
+                           totalAgendamentos--
                         } else {
-                           alert('Erro ao reservar agendamento: ' + resposta.error);
+                           alert('Erro ao enviar notificação por e-mail.');
                         }
-                     } catch (error) {
-                        console.error('Erro ao fazer reserva:', error);
-                        alert('Erro ao reservar agendamento.');
+                        const mensagemWebSocket = {
+                           action: 'agendamento',
+                           userId: user.id_usuario,
+                           companyId: agendamento.id_empresa,
+                           message: 'Novo agendamento realizado.',
+                           clientInfo: {
+                              nome: user.nome,
+                              imagemPerfil: user.imagemPerfil || 'caminho/do/seu/placeholder.png',
+                           },
+                        };
+
+                        // Envia mensagem para o WebSocket
+                        ws.send(JSON.stringify(mensagemWebSocket));
+                        container.remove();
+                     } else {
+                        alert('Erro ao reservar agendamento: ' + resposta.error);
                      }
-                  })
-               // }
+                  } catch (error) {
+                     console.error('Erro ao fazer reserva:', error);
+                     alert('Erro ao reservar agendamento.');
+                  }
+               })
+               }
             })
 
-            notificationIcon.textContent = totalAgendamentos;
+            notificationIcon.textContent = totalAgendamentos
             ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            showNotification(data.title, data.message);
+               const data = JSON.parse(event.data);
+               showNotification(data.title, data.message);
+               notificationIcon.innerHTML = `<i class="fa-solid fa-bell"></i>${data.notificationCount}`;
+               console.log("aqui  " +data.notificationCount)
 
-            const notificationIcon = document.getElementById('notification-icon');
-            notificationIcon.innerHTML = `<i class="fa-solid fa-bell"></i>${data.notificationCount}`;
-        }
+              
+            }
          } catch (error) {
             console.error('Erro na requisição:', error);
          }

@@ -17,7 +17,7 @@ function empresaControl(app, wss) {
                 driver: sqlite3.Database,
             });
 
-            const result = await db.all('SELECT imagemPerfil FROM clienteEmpresa');
+            const result = await db.all('SELECT imagemEmpresa FROM clienteEmpresa');
             response.status(200).json({ foto: result });
             db.close();
         } catch (error) {
@@ -49,7 +49,7 @@ function empresaControl(app, wss) {
     });
 
     // Rota para cadastrar um novo usuário
-    app.post('/empresa', upload.single('imagemPerfil'), inserir);
+    app.post('/empresa', upload.fields([{ name: 'imagemPerfil' }, { name: 'imagemEmpresa' }]), inserir);
     async function inserir(request, response) {
         try {
             const db = await open({
@@ -58,21 +58,25 @@ function empresaControl(app, wss) {
             });
 
             const senhaCriptografada = await bcrypt.hash(request.body.senha, 10);
-            const imagemPerfil = request.file ? request.file.path : null;
+            const imagemPerfil = request.files['imagemPerfil'] ? request.files['imagemPerfil'][0].path : null;
+            const imagemEmpresa = request.files['imagemEmpresa'] ? request.files['imagemEmpresa'][0].path : null;
 
-            if (imagemPerfil === null) {
-                return response.status(422).send({ error: 'ImagemPerfil não fornecido' });
+            if (imagemPerfil === null || imagemEmpresa === null) {
+                return response.status(422).send({ error: 'ImagemPerfil ou imagemEmpresa não fornecido' });
             }
 
             await db.run(
-                `INSERT INTO clienteEmpresa (nome,empresa,senha,email,cnpj,cep,bairro,cidade, endereco,estado, imagemPerfil) VALUES (?,?,?,?,?,?,?,?,?,?,?)`, request.body.nome, request.body.empresa, senhaCriptografada, request.body.email, request.body.cnpj, request.body.cep, request.body.bairro, request.body.cidade, request.body.endereco, request.body.estado, imagemPerfil
+                `INSERT INTO clienteEmpresa (nome, empresa, senha, email, cnpj, cep, bairro, cidade, endereco, estado, imagemPerfil, imagemEmpresa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                request.body.nome, request.body.empresa, senhaCriptografada, request.body.email, request.body.cnpj,
+                request.body.cep, request.body.bairro, request.body.cidade, request.body.endereco, request.body.estado,
+                imagemPerfil, imagemEmpresa
             );
 
             response.send(`Usuário: ${request.body.empresa} inserido com sucesso.`);
             db.close();
         } catch (error) {
             console.error('Erro:', error);
-            response.status(500).send('Erro interno no servidor.');
+            response.status(500).json({ error: error.message });
         }
     }
 
