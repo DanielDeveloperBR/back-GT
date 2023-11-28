@@ -66,10 +66,10 @@ function empresaControl(app, wss) {
             }
 
             await db.run(
-                `INSERT INTO clienteEmpresa (nome, empresa, senha, email, cnpj, cep, bairro, cidade, endereco, estado, imagemPerfil, imagemEmpresa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO clienteEmpresa (nome, empresa, senha, email, cnpj, cep, bairro, cidade, endereco, estado, imagemPerfil, imagemEmpresa, categoria) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 request.body.nome, request.body.empresa, senhaCriptografada, request.body.email, request.body.cnpj,
                 request.body.cep, request.body.bairro, request.body.cidade, request.body.endereco, request.body.estado,
-                imagemPerfil, imagemEmpresa
+                imagemPerfil, imagemEmpresa, request.body.categoria
             );
 
             response.send(`Usuário: ${request.body.empresa} inserido com sucesso.`);

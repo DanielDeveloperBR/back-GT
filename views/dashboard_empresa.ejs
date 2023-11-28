@@ -7,61 +7,36 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/responsivo.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/modal.css">
     <link rel="stylesheet" href="fontawesome-free-6.4.2-web/css/fontawesome.css">
     <title>Dashboard Empresa</title>
 </head>
 <style>
-    /* Função modal */
-    .modal {
-        display: flex;
-        position: fixed;
-        left: 0;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        background-color: rgba(0, 0, 0, 0.5);
-    }
-
-    .containerModal {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        background-color: var(--tabelas);
-        padding: 20px;
-        border-radius: 30px;
-        max-width: 400px;
-        margin: auto;
-    }
-
-    .modalEditar {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-    }
+  
 </style>
-
 <body>
     <header>
         <a><img src="<%= user.imagemPerfil %>" alt="logo" id="perfil"></a>
         <span id="hamb"><i class="fa-solid fa-bars"></i></span>
         <nav>
             <ul>
-                <li><a href="/agendamento" target="_self">Agendamento</a></li>
+                <li><a href="/agendamento" target="_self" title="Clica aqui para fazer o agendamento">Agendamento</a></li>
                 <li><a id="logout">Logout</a></li>
             </ul>
         </nav>
     </header>
     <main>
-        <h1 data-id-empresa="<%= user.id_empresa %>">
-            <%= user.empresa %>
-        </h1>
-        <div class="notification-icon" id="notification-icon"><i class="fa-solid fa-bell"></i>0</div>
-        <h1>Bem-vindo, <%= user.nome %>!</h1>
+        <section class="agendamento">
+            <h1>Bem-vindo, <%= user.nome %>!</h1>
+            <h1 data-id-empresa="<%= user.id_empresa %>">
+               Empresa 
+            </h1>
+            <h2><%= user.empresa %></h2>
+        </section>
+        <section class="agendamento" style="background-color: rgba(128, 128, 128, 0.185);">
+            <img style="width: 100%;  max-width: 450px;" src="<%=user.imagemEmpresa%>" alt="" srcset="">
+        </section>
+       <h1 style="text-align: center;">Seus agendamentos</h1>
         <section class="agendamentos" id="empresa-section">
 
         </section>
@@ -69,7 +44,6 @@
     </main>
 
     <script>
-        let totalAgendamentos = 0;
         window.addEventListener('DOMContentLoaded', async () => {
             const userId = await <%- user.id_empresa %>;
             const empresasSection = document.getElementById('empresa-section')
@@ -84,7 +58,7 @@
                 const btnEditar = document.createElement('button')
                 const btnRemover = document.createElement('button')
 
-                nomeDiv.textContent = "Nome: " + agendamento.nome;
+                nomeDiv.textContent = "Serviço: " + agendamento.nome;
                 horaDiv.textContent = "Hora: " + agendamento.hora;
                 dataDiv.textContent = `Data: ${agendamento.dia}/${agendamento.mes}`;
 
@@ -94,16 +68,22 @@
                 container.appendChild(btnEditar);
                 container.appendChild(btnRemover);
                 empresasSection.append(container);
-                totalAgendamentos++;
 
                 btnEditar.textContent = 'Editar'
                 btnRemover.textContent = 'Deletar'
                 btnRemover.style.backgroundColor = "#eb2020"
                 if (agendamento.status_reserva === 1) {
+                  document.querySelector('.agendamentos>div').style.maxWidth = "260px"
+                    const notificao = document.createElement('h3')
+                    const botaoAceitar = document.createElement("button")
+                    botaoAceitar.textContent = "Aperte aqui"
+                    notificao.textContent = "Você tem um pedido de agendamento!"
+                    container.appendChild(notificao)
+                    container.appendChild(botaoAceitar)
                     //criar um card se aceita ou nao
-                    container.style.backgroundColor = 'yellow'
-                    container.addEventListener("click", () => {
-                        const confirm = window.confirm("Você aceita a reserva ou não?")
+                    container.style.backgroundColor = 'var(--autor)'
+                    botaoAceitar.addEventListener("click", () => {
+                        const confirm = window.confirm("Você confirma a reserva?")
                         console.info(confirm)
                         if (confirm === true) {
                             alert('ok')
@@ -120,6 +100,7 @@
                                 .then(data => {
                                     if (data){
                                     container.style.backgroundColor = ''
+                                    window.location.href = "/dashboard"
                                 }
                                     console.log(data)
                                 })
@@ -130,6 +111,8 @@
                     })
                 }
                 // Evento editar o agendamento
+
+
                 btnEditar.addEventListener("click", () => {
                     const containerModal = document.createElement("div")
                     const modal = document.createElement("div")
@@ -142,21 +125,24 @@
                     const inputHora = document.createElement("input")
                     const btnEditar = document.createElement("button")
                     const btnCancelar = document.createElement("button")
+                    const containerBotao = document.createElement("div")
+                    containerBotao.classList.add("containerBotao")
                     inputData.type = "date"
                     inputHora.type = "time"
-                    labelNome.textContent = "Nome"
+                    labelNome.textContent = "Serviço"
                     labelData.textContent = "Data"
                     labelHora.textContent = "Hora"
                     btnEditar.textContent = "Editar"
                     btnCancelar.textContent = "Cancelar"
+                    containerBotao.append(btnEditar)
+                    containerBotao.append(btnCancelar)
                     modalEditar.append(labelNome)
                     modalEditar.append(inputNome)
                     modalEditar.append(labelData)
                     modalEditar.append(inputData)
                     modalEditar.append(labelHora)
                     modalEditar.append(inputHora)
-                    modalEditar.append(btnEditar)
-                    modalEditar.append(btnCancelar)
+                    modalEditar.append(containerBotao)
                     modal.classList.add("modal")
                     containerModal.classList.add("containerModal")
                     modalEditar.classList.add("modalEditar")
@@ -167,9 +153,11 @@
                     btnCancelar.addEventListener("click", () => {
                         modal.style.display = "none"
                     })
-                    inputNome.value = agendamento.nome
+                    // inputNome.value = agendamento.nome
                     inputData.value = agendamento.dia
                     inputHora.value = agendamento.hora
+                    inputNome.placeholder = "Digite o serviço disponível"
+
                     btnEditar.addEventListener("click", () => {
                         if (inputNome.value == "" || inputData.value == "" || inputHora == "") {
                             alert("preencha todos os campos")
@@ -236,7 +224,6 @@
                 container.appendChild(fotoDiv);
 
                 empresasSection.append(container);
-                totalAgendamentos++;
             }
         });
         function showNotification(title, message) {
@@ -246,9 +233,6 @@
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             showNotification(data.title, data.message);
-
-            const notificationIcon = document.getElementById('notification-icon');
-            notificationIcon.innerHTML = `<i class="fa-solid fa-bell"></i>${data.notificationCount}`;
         }
     </script>
 

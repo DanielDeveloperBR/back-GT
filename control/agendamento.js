@@ -92,7 +92,7 @@ function agendamento(app, wss) {
             })
 
             const mailOptions = {
-                from: 'danieldetrabalho@gmail.com',
+                from: 'no-reply',
                 to: cliente.email, // Substitua pela variável que contém o e-mail do cliente
                 subject: 'Notificação de Agendamento',
                 text: `Seu agendamento ${agendamento.nome} foi confirmado.`
@@ -286,6 +286,7 @@ function agendamento(app, wss) {
             res.status(500).json({ success: false, error: 'Erro interno ao fazer reserva.' });
         }
     })
+
     app.get('/reserva/negada', async (req, res) => {
         try {
             const db = await open({
