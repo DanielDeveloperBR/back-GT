@@ -77,7 +77,7 @@
 
                 if (response.ok) {
                     const responseData = await response.json();
-                    showNotification('Seu agendamento foi confirmado com sucesso!.');
+                    showNotification(`Seu agendamento do serviço ${nome} foi confirmado com sucesso!`);
                     window.location.href = '/dashboard'
                 } else {
                     alert('Erro ao realizar agendamento');
@@ -87,10 +87,10 @@
                 alert('Erro ao realizar agendamento');
             }
         });
-        function showNotification(title, message) {
+        function showNotification(title) {
     // Aqui você pode implementar a lógica para mostrar a notificação ao cliente
     // Por exemplo, usando uma biblioteca de notificações ou um pop-up personalizado
-    alert(`${title}\n${message}`);
+    alert(`${title}`);
 }
     </script>
     <script src="js/logout.js"></script>
