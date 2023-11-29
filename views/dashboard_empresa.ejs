@@ -52,8 +52,7 @@
         <h1 style="text-align: center;">Seus agendamentos</h1>
         <section class="agendamentos" id="empresa-section">
             <div class="nenhumAgendamento">
-                <p>Nenhum agendamento disponível.<br>Tente novamente mais tarde. <i
-                        class="fa-regular fa-face-dizzy"></i>
+                <p><a href="/agendamento" target="_self">Clica aqui para agendar</a>
                 </p>
                 <img src="img/bgCalendario.png" alt="Imagem Padrão ">
             </div>
@@ -68,10 +67,11 @@
             const empresasSection = document.getElementById('empresa-section')
             const response = await fetch(`/agendamento/${userId}`);
             const agendamentos = await response.json();
-            if (agendamentos.length < 1) {
-                nenhumAgendamento.style.display = "block";
+            console.log(agendamentos)
+            if (!agendamentos.length) {
+               nenhumAgendamento.style.display = "block";
             } else {
-                nenhumAgendamento.style.display = "none";
+               nenhumAgendamento.style.display = "none";
             }
             agendamentos.forEach((agendamento) => {
                 const container = document.createElement('div');
