@@ -15,6 +15,18 @@ import path from 'path';
 //     return count.count > 0;
 // }
 function clienteControl(app) {
+    app.get('/api/salas', (req, res) => {
+        // Lógica para obter a lista de salas disponíveis do seu banco de dados ou onde preferir
+    
+        // Suponha que você tenha uma lista de salas disponíveis
+        const salasDisponiveis = [
+          { id: 'sala1', nome: 'Sala 1' },
+          { id: 'sala2', nome: 'Sala 2' },
+          // ... outras salas
+        ];
+    
+        res.status(200).json(salasDisponiveis);
+      });
     // Filtrar e só aceita essas extensoes
     const fileFilter = (req, file, cb) => {
         const allowedExtensions = ['.jpg', '.jpeg', '.png']

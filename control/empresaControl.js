@@ -1,13 +1,105 @@
-// Importações
 import sqlite3 from 'sqlite3';
 import WebSocket from 'ws';
 import { open } from 'sqlite';
 import bcrypt from 'bcrypt';
 import multer from 'multer';
 import path from 'path';
-
-// Função para controlar as rotas relacionadas à empresa
 function empresaControl(app, wss) {
+    const salasDisponiveis = [];
+    const mensagensSala = {};
+    
+    // Função para gerar um ID simples
+    function gerarIdSimples() {
+        const timestamp = new Date().getTime();
+        const randomValue = Math.floor(Math.random() * 1000);
+        return `${timestamp}_${randomValue}`;
+    }
+    // Objeto para armazenar mensagens por sala
+const mensagensPorSala = {};
+
+// Rota para enviar mensagem
+app.post('/api/enviarMensagem', (req, res) => {
+  try {
+    // Lógica para enviar a mensagem para a sala específica
+    const salaId = req.body.salaId;
+    const mensagem = req.body.mensagem;
+
+    // Verifica se a sala já existe no objeto, se não, cria um array vazio
+    if (!mensagensPorSala[salaId]) {
+      mensagensPorSala[salaId] = [];
+    }
+
+    // Adiciona a nova mensagem ao array de mensagens da sala
+    mensagensPorSala[salaId].push(mensagem);
+
+    // Envie a nova mensagem para todos os clientes na sala usando WebSocket
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ type: 'novaMensagem', salaId, mensagem }));
+      }
+    });
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Erro ao enviar mensagem:', error);
+    res.status(500).json({ error: 'Erro interno no servidor.' });
+  }
+});
+
+    // Rota para criar uma nova sala
+    app.post('/api/criarSala', async (req, res) => {
+        try {
+            const novaSala = {
+                id: gerarIdSimples(),
+                nome: req.body.nome,
+            };
+    
+            salasDisponiveis.push(novaSala);
+            mensagensSala[novaSala.id] = [];
+    
+            wss.clients.forEach((client) => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify({ type: 'novaSala', sala: novaSala }));
+                }
+            });
+    
+            res.status(201).json(novaSala);
+        } catch (error) {
+            console.error('Erro ao criar sala:', error);
+            res.status(500).json({ error: 'Erro interno no servidor.' });
+        }
+    });
+    
+    app.get('/api/salasDisponiveis', async (req, res) => {
+        // Lógica para obter a lista de salas disponíveis do seu banco de dados ou onde preferir
+
+        // Suponha que você tenha uma lista de salas disponíveis
+        const salasDisponiveis = [
+            { id: 'sala1', nome: 'Sala 1' },
+            { id: 'sala2', nome: 'Sala 2' },
+        ];
+
+        res.status(200).json({ salas: salasDisponiveis });
+    });
+
+
+    app.post('/api/salas', (req, res) => {
+        // Lógica para criar uma sala no seu banco de dados ou onde preferir
+        const novaSala = {
+            id: 'id_gerado', // substitua com o id real gerado para a sala
+            nome: req.body.nome,
+            // outras informações da sala
+        };
+
+        // Envie a informação para o cliente através do WebSocket
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({ type: 'novaSala', sala: novaSala }));
+            }
+        });
+
+        res.status(201).json(novaSala);
+    });
     // Rota para exibir dados da empresa
     app.get('/empresa', exibir);
     async function exibir(request, response) {

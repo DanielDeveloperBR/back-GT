@@ -1,5 +1,3 @@
-// app.js
-
 import express from 'express';
 import http from 'http';
 import WebSocket from 'ws';
@@ -41,5 +39,4 @@ empresaControl(app, wss);
 clienteControl(app, wss);
 agendamento(app, wss);
 appControl(app);
-
 export { app, wss, server };
