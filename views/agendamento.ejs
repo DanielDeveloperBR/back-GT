@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsivo.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="fontawesome-free-6.4.2-web/css/fontawesome.css">
+    <link rel="stylesheet" href="css/agendamento.css">
+    <title>Dashboard Empresa</title>
+</head>
+
+<body>
+    <header>
+        <a href="/dashboard" target="_self"><img src="<%= user.imagemPerfil %>" alt="logo" id="perfil"></a>
+        <span id="hamb"><i class="fa-solid fa-bars"></i></span>
+        <nav>
+            <ul>
+                <li><a id="logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div id="empresa-section">
+
+        <div id="calendarModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeModal">&times;</span>
+                <!-- Adicionando o seletor de mês -->
+                <select id="monthSelector" class="dayMonthSelector" disabled>
+                    <option value="" disabled selected>Mês</option>
+                    <!-- Adicione aqui as opções para cada mês -->
+                </select>
+                <!-- Adicionando o elemento calendarBody -->
+                <table id="calendarBody"></table>
+                <button id="confirmButton">OK</button>
+                <button id="cancelButton">Cancelar</button>
+            </div>
+        </div>
+
+        <div class="custom-time-picker">
+            <!-- Modal -->
+            <div id="timePickerModal" class="modal">
+                <!-- Conteúdo do modal -->
+                <div class="modal-content">
+                    <!-- o botão de x para fechar -->
+                    <span class="close" id="closePicker">&times;</span>
+                    <label for="hourInput">Selecione a hora:</label>
+                    <!-- Selecionar o id da hora que escolher -->
+                    <div class="hour-selector" id="hourSelector"></div>
+                    <!-- Botão para  confirmar -->
+                    <button id="confirmTime">Confirmar</button>
+                </div>
+            </div>
+        </div>
+        <div class="agenda">
+            <form method="post" id="formulario" class="form">
+                <label for="nome">Nome do Serviço</label>
+                <input type="text" name="nome" id="nome">
+                <!-- Botão para escolher a data -->
+                <label for="openModalButton">Data</label>
+                <input id="openModalButton" type="button" value="Data" />
+                <!-- Botão para escolher a hora -->
+                <label for="openPicker">Hora</label>
+                <input type="button" id="openPicker" value="Hora" />
+                <input type="submit" value="Agendar">
+            </form>
+        </div>
+    </div>
+    <script defer src="fontawesome-free-6.4.2-web/js/all.js"></script>
+    <script>
+        let dia = null
+        let mes = null
+        const form = document.getElementById('formulario')
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const hora = getSelectedHour();
+            const nome = document.getElementById('nome').value.trim();
+
+            if (nome === "") {
+                showMessage("Preencha um serviço.");
+                return;
+            } else if (!dia || !mes) {
+                showMessage("Escolha uma data.")
+                return
+            } else if (hora == null) {
+                showMessage("Escolha um horário.")
+                return
+            }
+
+            closeCalendarModal();
+
+            try {
+                const response = await fetch('http://localhost:3000/agendamento', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        nome: nome,
+                        hora: hora,
+                        dia: dia,
+                        mes: mes
+                    })
+                });
+
+                if (response.ok) {
+                    const responseData = await response.json()
+                    showMessage(`Seu agendamento do serviço ${nome} foi confirmado com sucesso!`)
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 3000)
+                } else {
+                    showMessage('Erro ao realizar agendamento');
+                }
+            } catch (error) {
+                showMessage('Erro ao realizar agendamento');
+            }
+        })
+    </script>
+    <!-- calendario personalizado -->
+    <script src="js/agendamento.js"></script>
+    <script src="js/logout.js"></script>
+    <script src="js/responsivo.js"></script>
+</body>
+
+</html>

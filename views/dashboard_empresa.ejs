@@ -1,5 +1,3 @@
-<!-- dashboard_empresa.ejs -->
-
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -7,57 +5,300 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsivo.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/modal.css">
+    <link rel="stylesheet" href="css/loading.css">
+    <link rel="stylesheet" href="fontawesome-free-6.4.2-web/css/fontawesome.css">
     <title>Dashboard Empresa</title>
 </head>
+<style>
+    .nenhumAgendamento {
+        display: none;
+    }
+
+    .nenhumAgendamento img {
+        border-radius: 10px;
+    }
+</style>
 
 <body>
     <header>
-        <a><img src="img/logo.png" alt="logo"></a>
+        <a><img src="<%= user.imagemPerfil %>" alt="logo" id="perfil"></a>
         <span id="hamb"><i class="fa-solid fa-bars"></i></span>
         <nav>
             <ul>
+                <li><a href="#">Reservas</a></li>
+                <li><a href="/agendamento" target="_self" title="Clica aqui para fazer o agendamento">Agendamento</a>
+                </li>
                 <li><a id="logout">Logout</a></li>
             </ul>
         </nav>
     </header>
-
-    <h1>Dashboard Empresa</h1>
-
-    <div id="empresa-section">
-        <h1>Bem-vindo, <%= user.nome %>!</h1>
-        <p>Você está logado como empresa.</p>
-
-        <!-- Conteúdo específico para empresas -->
-        <form class="agenda">
-            <h1>Agendamento</h1>
-            <div class="form">
-                <input type="text" placeholder="Nome">
-                <input type="time" placeholder="Hora">
-                <input type="date" placeholder="Data">
-                <button>Agendar</button>
+    <main>
+        <div id="modal">
+            <div id="loading-spinner"></div>
+        </div>
+        <section class="agendamento">
+            <h1 data-id-empresa="<%= user.id_empresa %>">
+                Empresa
+            </h1>
+            <h2>
+                <%= user.empresa %>
+            </h2>
+        </section>
+        <section class="agendamento" style="background-color: rgba(128, 128, 128, 0.185);">
+            <img style="width: 100%;  max-width: 450px;" src="<%=user.imagemEmpresa%>" alt="" srcset="">
+        </section>
+        <h1 style="text-align: center;">Seus agendamentos</h1>
+        <section class="agendamentos" id="empresa-section">
+            <div class="nenhumAgendamento">
+                <p><a href="/agendamento" target="_self">Clica aqui para agendar</a>
+                </p>
+                <img src="img/bgCalendario.png" alt="Imagem Padrão ">
             </div>
-        </form>
-    </div>
+        </section>
 
+    </main>
+    <script src="js/loading.js"></script>
     <script>
-        const botao = document.getElementById("logout")
-        botao.addEventListener("click", (e) => {
-            e.preventDefault()
-            fetch('http://localhost:3000/logout', {
-                method: 'GET'
-            })
-                .then((response) => response.text())
-                .then((data) => {
-                    console.log("Logout realizado com sucesso: " + data);
-                    window.location.href = "../index.html";
+        window.addEventListener('DOMContentLoaded', async () => {
+            const userId = await <%- user.id_empresa %>;
+            const nenhumAgendamento = document.querySelector('.nenhumAgendamento')
+            const empresasSection = document.getElementById('empresa-section')
+            const response = await fetch(`/agendamento/${userId}`);
+            const agendamentos = await response.json();
+            console.log(agendamentos)
+            if (!agendamentos.length) {
+               nenhumAgendamento.style.display = "block";
+            } else {
+               nenhumAgendamento.style.display = "none";
+            }
+            agendamentos.forEach((agendamento) => {
+                const container = document.createElement('div');
+                const nomeDiv = document.createElement('h2');
+                const horaDiv = document.createElement('p');
+                const dataDiv = document.createElement('p');
+                const containerBotao = document.createElement("div")
+                const btnEditar = document.createElement('button')
+                const btnRemover = document.createElement('button')
+
+                nomeDiv.textContent = "Serviço: " + agendamento.nome;
+                horaDiv.textContent = "Hora: " + agendamento.hora;
+                dataDiv.textContent = `Data: ${agendamento.dia}/${agendamento.mes}`;
+
+                container.style.maxWidth = '300px'
+                container.style.height = '300px'
+                container.style.display = "flex"
+                container.style.justifyContent = "center"
+                container.style.alignItems = "center"
+                container.style.flexDirection = 'column'
+                container.style.width = '100%'
+                container.appendChild(nomeDiv);
+                container.appendChild(horaDiv);
+                container.appendChild(dataDiv);
+                containerBotao.appendChild(btnEditar);
+                containerBotao.appendChild(btnRemover);
+                container.appendChild(containerBotao)
+                containerBotao.style.display = "inline-flex"
+                empresasSection.append(container);
+                btnEditar.textContent = 'Editar'
+                btnRemover.textContent = 'Deletar'
+                btnRemover.style.backgroundColor = "#eb2020"
+                if (agendamento.status_reserva === 1) {
+                    const notificao = document.createElement('h3')
+                    const botaoAceitar = document.createElement("button")
+                    botaoAceitar.textContent = "Aperte aqui"
+                    notificao.textContent = "Você tem um pedido de agendamento!"
+                    container.appendChild(notificao)
+                    container.appendChild(botaoAceitar)
+                    //criar um card se aceita ou nao
+                    container.style.backgroundColor = 'var(--autor)'
+                    container.style.color = 'white'
+                    botaoAceitar.addEventListener("click", () => {
+                        const containerModal = document.createElement("div")
+                        const modal = document.createElement("div")
+                        const modalEditar = document.createElement("div")
+                        const perguntaH1 = document.createElement("h3")
+                        const btnConfirmar = document.createElement('button')
+                        const btnCancelar = document.createElement('button')
+                        perguntaH1.textContent = "Você confirma o agendamento?"
+                        perguntaH1.style.color = 'white'
+                        btnConfirmar.textContent = "Sim"
+                        btnCancelar.textContent = "Não"
+                        const containerBotao = document.createElement("div")
+                        containerBotao.classList.add("containerBotao")
+                        containerModal.appendChild(perguntaH1)
+                        containerBotao.appendChild(btnConfirmar)
+                        containerBotao.appendChild(btnCancelar)
+                        containerModal.append(containerBotao)
+                        modal.classList.add("modal")
+                        containerModal.classList.add("containerModal")
+                        modalEditar.classList.add("modalEditar")
+                        document.querySelector("main").append(modal)
+                        containerModal.appendChild(modalEditar)
+                        modal.appendChild(containerModal)
+                        // cancelar evento
+                        btnCancelar.addEventListener("click", () => {
+                            modal.style.display = "none"
+                            fetch('/reserva/negada', {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ "idAgendamento": agendamento.id_agendamento })
+                            })
+                                .then(response => response.json())
+
+                                .then(data => {
+                                    if (data) {
+                                        container.style.backgroundColor = ''
+                                        alert("Rejeitado com sucesso!")
+                                        window.location.href = "/dashboard"
+                                    }
+                                    console.log(data)
+                                })
+                                .catch(error => {
+                                    console.error('Erro ao processar reserva negada:', error);
+                                });
+                        })
+                        // Confirmar o agendamento
+                        btnConfirmar.addEventListener('click', () => {
+                            mostrarLoanding();
+                            alert("Confirmado com sucesso")
+                            modalEditar.style.display = "none"
+                            modalEditar.classList.remove("modal")
+                            esconderLoading();
+                            window.location.href = "/dashboard"
+                        })
+                    })
+                }
+                // Evento editar o agendamento
+                btnEditar.addEventListener("click", () => {
+                    const containerModal = document.createElement("div")
+                    const modal = document.createElement("div")
+                    const modalEditar = document.createElement("div")
+                    const labelNome = document.createElement("label")
+                    const labelData = document.createElement("label")
+                    const labelHora = document.createElement("label")
+                    const inputNome = document.createElement("input")
+                    const inputData = document.createElement("input")
+                    const inputHora = document.createElement("input")
+                    const btnEditar = document.createElement("button")
+                    const btnCancelar = document.createElement("button")
+                    const containerBotao = document.createElement("div")
+                    containerBotao.classList.add("containerBotao")
+                    inputData.type = "date"
+                    inputHora.type = "time"
+                    labelNome.textContent = "Serviço"
+                    labelData.textContent = "Data"
+                    labelHora.textContent = "Hora"
+                    btnEditar.textContent = "Editar"
+                    btnCancelar.textContent = "Cancelar"
+                    containerBotao.append(btnEditar)
+                    containerBotao.append(btnCancelar)
+                    modalEditar.append(labelNome)
+                    modalEditar.append(inputNome)
+                    modalEditar.append(labelData)
+                    modalEditar.append(inputData)
+                    modalEditar.append(labelHora)
+                    modalEditar.append(inputHora)
+                    modalEditar.append(containerBotao)
+                    modal.classList.add("modal")
+                    containerModal.classList.add("containerModal")
+                    modalEditar.classList.add("modalEditar")
+                    document.querySelector("main").append(modal)
+                    containerModal.appendChild(modalEditar)
+                    modal.appendChild(containerModal)
+                    // cancelar evento
+                    btnCancelar.addEventListener("click", () => {
+                        modal.style.display = "none"
+                    })
+                    inputData.value = agendamento.dia
+                    inputHora.value = agendamento.hora
+                    inputNome.placeholder = "Digite o serviço disponível"
+
+                    btnEditar.addEventListener("click", () => {
+                        if (inputNome.value == "" || inputData.value == "" || inputHora == "") {
+                            alert("preencha todos os campos")
+                            return
+                        }
+                        fetch(`/agendamento/${agendamento.id_agendamento}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                "id_agendamento": agendamento.id_agendamento, "nome": inputNome.value, "dia": new Date(inputData.value).getUTCDate(), "mes": new Date(inputData.value).getUTCMonth() + 1, "hora": inputHora.value, "id_empresa": agendamento.id_empresa
+                            })
+                        })
+                            .then(() => {
+                                modalEditar.style.display = "none"
+                                modalEditar.classList.remove("modal")
+                                window.location.href = "/dashboard"
+                            })
+
+                    })
                 })
-                .catch((error) => {
-                    console.error("Erro ao fazer logout: " + error);
-                });
+                // Evento de remover agendamento
+                btnRemover.addEventListener("click", async () => {
+                    const response = await fetch(`/agendamento/${agendamento.id_agendamento}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    const resposta = await response.json()
+                    if (resposta) {
+                        container.remove()
+                        alert(agendamento.nome + " removido com sucesso!!")
+                        window.location.href = "/dashboard"
+                    } else {
+                        alert("Erro ao tentar deletar")
+                    }
+                })
+            })
         })
+
+        const ws = new WebSocket('ws://localhost:3000');
+        ws.addEventListener('message', (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.userId && data.userId === userId) {
+                console.log('Mensagem para o usuário:', data.message);
+            } else if (data.companyId && data.companyId === companyId) {
+                console.log('Mensagem para a empresa:', data.message);
+
+                // Exibe a foto e o nome do cliente na seção de agendamentos
+                const container = document.createElement('div');
+                const nomeDiv = document.createElement('h2');
+                const fotoDiv = document.createElement('img');
+
+                nomeDiv.textContent = `Nome: ${data.clientInfo.nome}`;
+                fotoDiv.src = data.clientInfo.imagemPerfil;
+                fotoDiv.alt = 'Foto do cliente';
+
+                container.appendChild(nomeDiv);
+                container.appendChild(fotoDiv);
+
+                empresasSection.append(container);
+            }
+        });
+        function showNotification(title, message) {
+            alert(`${title}\n${message}`);
+        }
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            showNotification(data.title, data.message);
+        }
     </script>
+
+    <script defer src="fontawesome-free-6.4.2-web/js/all.js"></script>
+    <script src="js/logout.js"></script>
     <script src="js/responsivo.js"></script>
+
+    </div>
 </body>
 
 </html>
