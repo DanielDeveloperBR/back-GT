@@ -5,10 +5,10 @@ import path from 'path';
 import WebSocket from 'ws';
 import nodemailer from 'nodemailer';
 // Verificar a disponibilidade para reservar
-async function verificarDisponibilidade(db, idEmpresa, hora, minuto) {
+async function verificarDisponibilidade(db, idEmpresa, hora) {
     // Altere a consulta SQL na função verificarDisponibilidade
-    const count = await db.get(`SELECT COUNT(id_agendamento) as count FROM agendamento WHERE id_empresa = ? AND hora = ? AND minuto = ? AND status_reserva = 0
-`, idEmpresa, hora, minuto);
+    const count = await db.get(`SELECT COUNT(id_agendamento) as count FROM agendamento WHERE id_empresa = ? AND hora = ?  AND status_reserva = 0
+`, idEmpresa, hora);
 
 
     return count.count === 0;
@@ -38,9 +38,9 @@ function agendamento(app, wss) {
                 driver: sqlite3.Database,
             });
             const idEmpresa = req.session.loggedUser.id_empresa;
-            const { nome, dia, mes, hora, minuto } = req.body;
+            const { nome, dia, mes, hora } = req.body;
             // Verifique a disponibilidade antes de inserir
-            const horarioDisponivel = await verificarDisponibilidade(db, idEmpresa, hora, minuto)
+            const horarioDisponivel = await verificarDisponibilidade(db, idEmpresa, hora)
             await db.run('UPDATE agendamento SET status_reserva = 1 WHERE id_agendamento = ?', idAgendamento);
 
             await db.run('DELETE FROM agendamento WHERE id_agendamento = ?', idAgendamento)
@@ -49,7 +49,7 @@ function agendamento(app, wss) {
                 // Insira o agendamento
                 const idUsuario = req.session.loggedUser.id_usuario;
                 await db.run(
-                    `INSERT INTO agendamento (nome, dia, mes, hora, minuto, id_empresa, id_usuario) VALUES (?, ?, ?, ?, ?, ?, ?)`, nome, dia, mes, hora, minuto, idEmpresa, idUsuario)
+                    `INSERT INTO agendamento (nome, dia, mes, hora, id_empresa, id_usuario) VALUES (?, ?, ?, ?, ?, ?)`, nome, dia, mes, hora, idEmpresa, idUsuario)
 
                 res.json({ Message: `Agendamento: ${nome} inserido com sucesso.` })
                 await db.close()
@@ -188,12 +188,12 @@ function agendamento(app, wss) {
                 driver: sqlite3.Database
             });
             const idEmpresa = request.session.loggedUser.id_empresa;
-            const { nome, dia, mes, hora, minuto } = request.body;
+            const { nome, dia, mes, hora } = request.body;
 
             // Altere a linha abaixo para retornar o ID da empresa
             const { id_empresa } = await db.get('SELECT id_empresa FROM clienteEmpresa WHERE id_empresa = ?', idEmpresa);
 
-            await db.run('INSERT INTO agendamento (nome, dia, mes, hora, minuto, id_empresa) VALUES (?, ?, ?, ?, ?, ?)', nome, dia, mes, hora, minuto, id_empresa);
+            await db.run('INSERT INTO agendamento (nome, dia, mes, hora, id_empresa) VALUES (?, ?, ?, ?, ?)', nome, dia, mes, hora, id_empresa);
             console.log("Agendamento " + request.session.loggedUser.user + " " + "com sucesso")
             response.status(200).json({ Mensagem: "Agendamento " + request.session.loggedUser.user + "" + "com sucesso" })
             db.close();
@@ -214,11 +214,11 @@ function agendamento(app, wss) {
                 driver: sqlite3.Database
             })
             const idEmpresa = req.session.loggedUser.id_empresa;
-            const { nome, dia, mes, hora, minuto } = req.body
+            const { nome, dia, mes, hora} = req.body
 
             const { id_empresa } = await db.get('SELECT id_empresa FROM clienteEmpresa WHERE id_empresa = ?', idEmpresa);
 
-            await db.run('UPDATE agendamento SET nome = ?, dia = ?, mes = ?, hora = ?, minuto = ? WHERE id_agendamento = ? AND id_empresa = ?', nome, dia, mes, hora, minuto, idAgendamento, id_empresa);
+            await db.run('UPDATE agendamento SET nome = ?, dia = ?, mes = ?, hora = ? WHERE id_agendamento = ? AND id_empresa = ?', nome, dia, mes, hora, idAgendamento, id_empresa);
 
             console.log("Agendamento editado com sucesso");
             console.log("Agendamento " + req.body.nome + " " + "trocado com sucesso")
@@ -286,7 +286,7 @@ function agendamento(app, wss) {
             res.status(500).json({ success: false, error: 'Erro interno ao fazer reserva.' });
         }
     })
-
+    // Reserva negada
     app.get('/reserva/negada', async (req, res) => {
         try {
             const db = await open({

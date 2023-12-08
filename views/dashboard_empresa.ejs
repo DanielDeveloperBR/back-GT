@@ -28,6 +28,7 @@
         <span id="hamb"><i class="fa-solid fa-bars"></i></span>
         <nav>
             <ul>
+                <li><a href="#">Reservas</a></li>
                 <li><a href="/agendamento" target="_self" title="Clica aqui para fazer o agendamento">Agendamento</a>
                 </li>
                 <li><a id="logout">Logout</a></li>
@@ -228,7 +229,7 @@
                                 'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({
-                                "id_agendamento": agendamento.id_agendamento, "nome": inputNome.value, "dia": new Date(inputData.value).getUTCDate(), "mes": new Date(inputData.value).getUTCMonth() + 1, "hora": inputHora.value, "minuto": new Date(inputData.value).getUTCMinutes(), "id_empresa": agendamento.id_empresa
+                                "id_agendamento": agendamento.id_agendamento, "nome": inputNome.value, "dia": new Date(inputData.value).getUTCDate(), "mes": new Date(inputData.value).getUTCMonth() + 1, "hora": inputHora.value, "id_empresa": agendamento.id_empresa
                             })
                         })
                             .then(() => {
