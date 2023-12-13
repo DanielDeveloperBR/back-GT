@@ -2,7 +2,7 @@ import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import multer from 'multer';
 import path from 'path';
-import WebSocket from 'ws';
+// import WebSocket from 'ws';
 import nodemailer from 'nodemailer';
 // Verificar a disponibilidade para reservar
 async function verificarDisponibilidade(db, idEmpresa, hora) {

@@ -24,15 +24,27 @@
 
 <body>
    <header>
-      <a href="/dashboard" target="_self">
+      <a target="_self">
          <img src="<%= user.imagemPerfil || 'caminho/do/seu/placeholder.png' %>" alt="perfil cliente" id="perfil" />
       </a>
+      <menu>
+         <ul>
+            <li>
+               <a href="">
+                  <span id="menu"><i class="fa-solid fa-gear"></i></span>
+               </a>
+               <span id="menu-after" class="close-icon">X</span>
+            </li>
+            <li><a id="excluirConta">Excluir conta</a></li>
+         </ul>
+      </menu>
       <span id="hamb"><i class="fa-solid fa-bars"></i></span>
       <nav>
          <ul>
             <li><a id="logout">Logout</a></li>
          </ul>
       </nav>
+
    </header>
    <main>
       <div id="modal">
@@ -53,6 +65,46 @@
    </main>
    <script src="js/loading.js"></script>
    <script>
+      const user = <%- JSON.stringify(user) %>;
+      const excluirConta = document.getElementById('excluirConta')
+      excluirConta.addEventListener('click', () => {
+         fetch(`/usuario/${user.id_usuario}`, {
+            method: 'DELETE',
+            headers: {
+               'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id_usuario: user.id_usuario })
+         })
+            .then(response => response.json())
+            .then(data => {
+               window.location.href = '/index.html'
+            })
+            .catch(error => console.error(error))
+      })
+
+      const menu = document.querySelector('menu');
+      document.querySelector('#perfil').addEventListener('click', () => {
+         if (menu.style.display === 'none' || menu.style.display === '') {
+            menu.style.display = 'flex';
+         } else {
+            menu.style.display = 'none';
+         }
+      })
+
+      const menuAfter = document.getElementById('menu-after');
+
+      menuAfter.addEventListener('click', (event) => {
+         event.stopPropagation()
+         menu.style.display = 'none';
+      });
+
+      document.addEventListener('click', (event) => {
+         if (event.target !== document.querySelector('header #perfil') && !menu.contains(event.target)) {
+            menu.style.display = 'none';
+         }
+      });
+
+
       const nenhumAgendamento = document.querySelector('.nenhumAgendamento')
       window.addEventListener('DOMContentLoaded', async () => {
          try {
@@ -62,7 +114,6 @@
             const empresasSection = document.getElementById('empresa-section');
             const notificationIcon = document.getElementById('notification-icon');
 
-            const user = <%- JSON.stringify(user) %>;
             if (agendamentos.length < 1 || agendamentos.every(agendamento => agendamento.status_reserva === 1)) {
                nenhumAgendamento.style.display = "block";
             } else {

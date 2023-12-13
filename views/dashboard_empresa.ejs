@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/responsivo.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/agendamento.css">
     <link rel="stylesheet" href="css/modal.css">
     <link rel="stylesheet" href="css/loading.css">
     <link rel="stylesheet" href="fontawesome-free-6.4.2-web/css/fontawesome.css">
@@ -61,6 +62,7 @@
 
     </main>
     <script src="js/loading.js"></script>
+    <script src="js/criarModal.js"></script>
     <script>
         window.addEventListener('DOMContentLoaded', async () => {
             const userId = await <%- user.id_empresa %>;
@@ -68,11 +70,10 @@
             const empresasSection = document.getElementById('empresa-section')
             const response = await fetch(`/agendamento/${userId}`);
             const agendamentos = await response.json();
-            console.log(agendamentos)
             if (!agendamentos.length) {
-               nenhumAgendamento.style.display = "block";
+                nenhumAgendamento.style.display = "block";
             } else {
-               nenhumAgendamento.style.display = "none";
+                nenhumAgendamento.style.display = "none";
             }
             agendamentos.forEach((agendamento) => {
                 const container = document.createElement('div');
@@ -115,131 +116,98 @@
                     //criar um card se aceita ou nao
                     container.style.backgroundColor = 'var(--autor)'
                     container.style.color = 'white'
-                    botaoAceitar.addEventListener("click", () => {
-                        const containerModal = document.createElement("div")
-                        const modal = document.createElement("div")
-                        const modalEditar = document.createElement("div")
-                        const perguntaH1 = document.createElement("h3")
-                        const btnConfirmar = document.createElement('button')
-                        const btnCancelar = document.createElement('button')
-                        perguntaH1.textContent = "Você confirma o agendamento?"
-                        perguntaH1.style.color = 'white'
-                        btnConfirmar.textContent = "Sim"
-                        btnCancelar.textContent = "Não"
-                        const containerBotao = document.createElement("div")
-                        containerBotao.classList.add("containerBotao")
-                        containerModal.appendChild(perguntaH1)
-                        containerBotao.appendChild(btnConfirmar)
-                        containerBotao.appendChild(btnCancelar)
-                        containerModal.append(containerBotao)
-                        modal.classList.add("modal")
-                        containerModal.classList.add("containerModal")
-                        modalEditar.classList.add("modalEditar")
-                        document.querySelector("main").append(modal)
-                        containerModal.appendChild(modalEditar)
-                        modal.appendChild(containerModal)
-                        // cancelar evento
-                        btnCancelar.addEventListener("click", () => {
-                            modal.style.display = "none"
-                            fetch('/reserva/negada', {
-                                method: 'PUT',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({ "idAgendamento": agendamento.id_agendamento })
-                            })
-                                .then(response => response.json())
 
-                                .then(data => {
-                                    if (data) {
-                                        container.style.backgroundColor = ''
-                                        alert("Rejeitado com sucesso!")
-                                        window.location.href = "/dashboard"
-                                    }
-                                    console.log(data)
-                                })
-                                .catch(error => {
-                                    console.error('Erro ao processar reserva negada:', error);
-                                });
-                        })
-                        // Confirmar o agendamento
-                        btnConfirmar.addEventListener('click', () => {
-                            mostrarLoanding();
-                            alert("Confirmado com sucesso")
-                            modalEditar.style.display = "none"
-                            modalEditar.classList.remove("modal")
-                            esconderLoading();
-                            window.location.href = "/dashboard"
-                        })
-                    })
-                }
-                // Evento editar o agendamento
-                btnEditar.addEventListener("click", () => {
-                    const containerModal = document.createElement("div")
-                    const modal = document.createElement("div")
-                    const modalEditar = document.createElement("div")
-                    const labelNome = document.createElement("label")
-                    const labelData = document.createElement("label")
-                    const labelHora = document.createElement("label")
-                    const inputNome = document.createElement("input")
-                    const inputData = document.createElement("input")
-                    const inputHora = document.createElement("input")
-                    const btnEditar = document.createElement("button")
-                    const btnCancelar = document.createElement("button")
-                    const containerBotao = document.createElement("div")
-                    containerBotao.classList.add("containerBotao")
-                    inputData.type = "date"
-                    inputHora.type = "time"
-                    labelNome.textContent = "Serviço"
-                    labelData.textContent = "Data"
-                    labelHora.textContent = "Hora"
-                    btnEditar.textContent = "Editar"
-                    btnCancelar.textContent = "Cancelar"
-                    containerBotao.append(btnEditar)
-                    containerBotao.append(btnCancelar)
-                    modalEditar.append(labelNome)
-                    modalEditar.append(inputNome)
-                    modalEditar.append(labelData)
-                    modalEditar.append(inputData)
-                    modalEditar.append(labelHora)
-                    modalEditar.append(inputHora)
-                    modalEditar.append(containerBotao)
-                    modal.classList.add("modal")
-                    containerModal.classList.add("containerModal")
-                    modalEditar.classList.add("modalEditar")
-                    document.querySelector("main").append(modal)
-                    containerModal.appendChild(modalEditar)
-                    modal.appendChild(containerModal)
+                    // Confirmar o agendamento
+                    function confirmar() {
+                        mostrarLoanding();
+                        alert("Confirmado com sucesso")
+                        const modalEditar = document.querySelector('.modalEditar')
+                        modalEditar.style.display = "none"
+                        modalEditar.classList.remove("modal")
+                        esconderLoading();
+                        window.location.href = "/dashboard"
+                    }
+
                     // cancelar evento
-                    btnCancelar.addEventListener("click", () => {
-                        modal.style.display = "none"
-                    })
-                    inputData.value = agendamento.dia
-                    inputHora.value = agendamento.hora
-                    inputNome.placeholder = "Digite o serviço disponível"
-
-                    btnEditar.addEventListener("click", () => {
-                        if (inputNome.value == "" || inputData.value == "" || inputHora == "") {
-                            alert("preencha todos os campos")
-                            return
-                        }
-                        fetch(`/agendamento/${agendamento.id_agendamento}`, {
+                    function cancelar(agendamento) {
+                        fetch('/reserva/negada', {
                             method: 'PUT',
                             headers: {
-                                'Content-Type': 'application/json'
+                                'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify({
-                                "id_agendamento": agendamento.id_agendamento, "nome": inputNome.value, "dia": new Date(inputData.value).getUTCDate(), "mes": new Date(inputData.value).getUTCMonth() + 1, "hora": inputHora.value, "id_empresa": agendamento.id_empresa
-                            })
+                            body: JSON.stringify({ "idAgendamento": agendamento })
                         })
-                            .then(() => {
-                                modalEditar.style.display = "none"
-                                modalEditar.classList.remove("modal")
-                                window.location.href = "/dashboard"
+                            .then(response => response.json())
+
+                            .then(data => {
+                                if (data) {
+                                    container.style.backgroundColor = ''
+                                    alert("Cancelado com sucesso!")
+                                    const modalEditar = document.querySelector('.modalEditar')
+                                    modalEditar.style.display = "none"
+                                    modalEditar.classList.remove("modal")
+                                    window.location.href = "/dashboard"
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Erro ao processar reserva negada:', error);
                             })
 
+                    }
+
+                    botaoAceitar.addEventListener("click", () => {
+                        const botaoConfirmar = criarButton('Confirmar', 'click', confirmar)
+                        const botaoCancelar = criarButton('Cancelar', 'click', () => cancelar(agendamento.id_agendamento));
+
+                        criarModal('Você tem certeza?', botaoConfirmar, botaoCancelar, null, null)
                     })
+                }
+
+                // Evento editar o agendamento
+                function editar(id_agendamento, id_empresa) {
+                    const inputs = {
+                        nome: document.getElementById('nome').value,
+                        data: document.getElementById('data').value,
+                        hora: document.getElementById('hora').value
+                    };
+                    if (inputs.nome == "" || inputs.data == "" || inputs.hora == "") {
+                        alert("preencha todos os campos")
+                        return
+                    }
+                    fetch(`/agendamento/${id_agendamento}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            "id_agendamento": id_agendamento, "nome": inputs.nome, "dia": new Date(inputs.data).getUTCDate(), "mes": new Date(inputs.data).getUTCMonth() + 1, "hora": inputs.hora, "id_empresa": id_empresa
+                        })
+                    })
+                        .then(() => {
+                            const modalEditar = document.querySelector('.modalEditar')
+                            modalEditar.style.display = "none"
+                            modalEditar.classList.remove("modal")
+                            window.location.href = "/dashboard"
+                        })
+                }
+                // cancelar evento
+                function cancelarModal() {
+                    const modalEditar = document.querySelector('.modal')
+                    modalEditar.style.display = "none"
+                    modalEditar.classList.remove("modal")
+                }
+
+                const labelsTexto = ['Serviço', 'Data', 'Hora']
+                const names = ['nome', 'data', 'hora']
+                const inputsTipos = ['text', 'date', 'time']
+
+                const labelsArray = labelsTexto.map((texto, index) => criarLabel(texto, names[index]));
+                const inputsArray = inputsTipos.map((tipo, index) => criarInput(tipo, names[index]));
+
+                btnEditar.addEventListener('click', () => {
+                    criarModal(null, criarButton('Editar', 'click', () => editar(agendamento.id_agendamento, agendamento.id_empresa)), criarButton('Cancelar', 'click', cancelarModal), labelsArray, inputsArray)
                 })
+
                 // Evento de remover agendamento
                 btnRemover.addEventListener("click", async () => {
                     const response = await fetch(`/agendamento/${agendamento.id_agendamento}`, {
@@ -258,6 +226,7 @@
                     }
                 })
             })
+
         })
 
         const ws = new WebSocket('ws://localhost:3000');
@@ -284,6 +253,7 @@
                 empresasSection.append(container);
             }
         });
+
         function showNotification(title, message) {
             alert(`${title}\n${message}`);
         }
