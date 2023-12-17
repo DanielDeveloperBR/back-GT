@@ -27,6 +27,7 @@
       <a target="_self">
          <img src="<%= user.imagemPerfil || 'caminho/do/seu/placeholder.png' %>" alt="perfil cliente" id="perfil" />
       </a>
+      <!-- Menu do cliente -->
       <menu>
          <ul>
             <li>
@@ -38,9 +39,11 @@
             <li><a id="excluirConta">Excluir conta</a></li>
          </ul>
       </menu>
+
       <span id="hamb"><i class="fa-solid fa-bars"></i></span>
       <nav>
          <ul>
+            <li><a href="/reservas">Reservas</a></li>
             <li><a id="logout">Logout</a></li>
          </ul>
       </nav>
@@ -50,10 +53,11 @@
       <div id="modal">
          <div id="loading-spinner"></div>
       </div>
-
+      
       <h2 style="text-align: center; margin: 40px auto;">Agendamentos disponíveis</h2>
-
+      
       <section class="agendamentos" id="empresa-section">
+         <h3>Suas reservas</h3>
          <!-- Se não houver agendamentos, exiba uma mensagem ou imagem padrão -->
          <div class="nenhumAgendamento">
             <p>Nenhum agendamento disponível.<br>Tente novamente mais tarde. <i class="fa-regular fa-face-dizzy"></i>
@@ -64,46 +68,9 @@
       </section>
    </main>
    <script src="js/loading.js"></script>
+   <!-- Pegando as reservas -->
    <script>
       const user = <%- JSON.stringify(user) %>;
-      const excluirConta = document.getElementById('excluirConta')
-      excluirConta.addEventListener('click', () => {
-         fetch(`/usuario/${user.id_usuario}`, {
-            method: 'DELETE',
-            headers: {
-               'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ id_usuario: user.id_usuario })
-         })
-            .then(response => response.json())
-            .then(data => {
-               window.location.href = '/index.html'
-            })
-            .catch(error => console.error(error))
-      })
-
-      const menu = document.querySelector('menu');
-      document.querySelector('#perfil').addEventListener('click', () => {
-         if (menu.style.display === 'none' || menu.style.display === '') {
-            menu.style.display = 'flex';
-         } else {
-            menu.style.display = 'none';
-         }
-      })
-
-      const menuAfter = document.getElementById('menu-after');
-
-      menuAfter.addEventListener('click', (event) => {
-         event.stopPropagation()
-         menu.style.display = 'none';
-      });
-
-      document.addEventListener('click', (event) => {
-         if (event.target !== document.querySelector('header #perfil') && !menu.contains(event.target)) {
-            menu.style.display = 'none';
-         }
-      });
-
 
       const nenhumAgendamento = document.querySelector('.nenhumAgendamento')
       window.addEventListener('DOMContentLoaded', async () => {
@@ -119,6 +86,7 @@
             } else {
                nenhumAgendamento.style.display = "none";
             }
+            function 
             agendamentos.forEach((agendamento) => {
                if (agendamento.status_reserva === 0) {
                   const container = document.createElement('div');
@@ -192,6 +160,7 @@
          }
       })
    </script>
+   <script src="js/menuUsuarios.js"></script>
    <script defer src="fontawesome-free-6.4.2-web/js/all.js"></script>
    <script src="js/logout.js"></script>
    <script src="js/responsivo.js"></script>

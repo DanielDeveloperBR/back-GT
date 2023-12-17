@@ -185,33 +185,57 @@ function empresaControl(app, wss) {
     }
     // Deletar
     app.delete('/empresa/:id', async (req, res) => {
-        const id_empresa = req.params.id
+        const id_empresa = req.params.id;
+    
         try {
             const db = await open({
                 filename: './lib/gt.db',
                 driver: sqlite3.Database,
             });
+    
+            await db.run('BEGIN TRANSACTION'); // Inicia a transação
+    
+            // Recuperar informações da empresa antes de destruir a sessão
             const empresa = await db.get('SELECT * FROM clienteEmpresa WHERE id_empresa = ?', id_empresa);
-            // Remover o agendamento do banco de dados
-            await db.run('DELETE FROM clienteEmpresa WHERE id_empresa = ?', id_empresa);
-
+    
+            // Remover a imagem de perfil e a imagem da empresa se existirem
             if (empresa && empresa.imagemPerfil) {
-                fs.unlinkSync(empresa.imagemPerfil);
+                const imagemPerfilPath = empresa.imagemPerfil;
+                if (fs.existsSync(imagemPerfilPath)) {
+                    fs.unlinkSync(imagemPerfilPath);
+                }
             }
+            if (empresa && empresa.imagemEmpresa) {
+                const imagemEmpresaPath = empresa.imagemEmpresa;
+                if (fs.existsSync(imagemEmpresaPath)) {
+                    fs.unlinkSync(imagemEmpresaPath);
+                }
+            }
+    
+            // Excluir agendamentos associados à empresa
+            await db.run('DELETE FROM agendamento WHERE id_empresa = ?', id_empresa);
+    
+            // Excluir a empresa
+            await db.run('DELETE FROM clienteEmpresa WHERE id_empresa = ?', id_empresa);
+    
+            // Destruir a sessão
             req.session.destroy((err) => {
                 if (err) {
                     console.error('Erro ao destruir a sessão:', err);
                     return res.status(500).json({ success: false, error: 'Erro interno ao excluir usuário.' });
                 }
                 res.clearCookie('userID');
-                res.json({ success: true, message: `${req.body.nome} deletado com sucesso.` });
+                res.json({ success: true, message: `Deletado com sucesso.` });
             });
-
+    
+            await db.run('COMMIT'); // Comita a transação
             db.close();
         } catch (error) {
-            console.error('Erro ao remover agendamento:', error);
-            res.status(500).json({ success: false, error: 'Erro interno ao remover agendamento.' });
+            console.error('Erro ao remover empresa:', error);
+            res.status(500).json({ success: false, error: 'Erro interno ao remover empresa.' });
         }
-    })
+    });
+    
+    
 }
 export default empresaControl;

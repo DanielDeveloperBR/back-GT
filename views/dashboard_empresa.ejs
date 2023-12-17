@@ -26,6 +26,18 @@
 <body>
     <header>
         <a><img src="<%= user.imagemPerfil %>" alt="logo" id="perfil"></a>
+        <!-- Menu da empresa -->
+        <menu>
+            <ul>
+                <li>
+                    <a href="">
+                        <span id="menu"><i class="fa-solid fa-gear"></i></span>
+                    </a>
+                    <span id="menu-after" class="close-icon">X</span>
+                </li>
+                <li><a id="excluirConta">Excluir conta</a></li>
+            </ul>
+        </menu>
         <span id="hamb"><i class="fa-solid fa-bars"></i></span>
         <nav>
             <ul>
@@ -64,6 +76,7 @@
     <script src="js/loading.js"></script>
     <script src="js/criarModal.js"></script>
     <script>
+        const user = <%- JSON.stringify(user) %>;
         window.addEventListener('DOMContentLoaded', async () => {
             const userId = await <%- user.id_empresa %>;
             const nenhumAgendamento = document.querySelector('.nenhumAgendamento')
@@ -130,6 +143,7 @@
 
                     // cancelar evento
                     function cancelar(agendamento) {
+                        mostrarLoanding();
                         fetch('/reserva/negada', {
                             method: 'PUT',
                             headers: {
@@ -142,6 +156,7 @@
                             .then(data => {
                                 if (data) {
                                     container.style.backgroundColor = ''
+                                    esconderLoading();
                                     alert("Cancelado com sucesso!")
                                     const modalEditar = document.querySelector('.modalEditar')
                                     modalEditar.style.display = "none"
@@ -263,7 +278,7 @@
             showNotification(data.title, data.message);
         }
     </script>
-
+    <script src="js/menuUsuarios.js"></script>
     <script defer src="fontawesome-free-6.4.2-web/js/all.js"></script>
     <script src="js/logout.js"></script>
     <script src="js/responsivo.js"></script>
