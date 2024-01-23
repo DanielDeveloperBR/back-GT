@@ -4,10 +4,12 @@ import { open } from 'sqlite';
 import bcrypt from 'bcrypt';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
+
 function empresaControl(app, wss) {
     const salasDisponiveis = [];
     const mensagensSala = {};
-    
+
     // Função para gerar um ID simples
     function gerarIdSimples() {
         const timestamp = new Date().getTime();
@@ -15,36 +17,36 @@ function empresaControl(app, wss) {
         return `${timestamp}_${randomValue}`;
     }
     // Objeto para armazenar mensagens por sala
-const mensagensPorSala = {};
+    const mensagensPorSala = {};
 
-// Rota para enviar mensagem
-app.post('/api/enviarMensagem', (req, res) => {
-  try {
-    // Lógica para enviar a mensagem para a sala específica
-    const salaId = req.body.salaId;
-    const mensagem = req.body.mensagem;
+    // Rota para enviar mensagem
+    app.post('/api/enviarMensagem', (req, res) => {
+        try {
+            // Lógica para enviar a mensagem para a sala específica
+            const salaId = req.body.salaId;
+            const mensagem = req.body.mensagem;
 
-    // Verifica se a sala já existe no objeto, se não, cria um array vazio
-    if (!mensagensPorSala[salaId]) {
-      mensagensPorSala[salaId] = [];
-    }
+            // Verifica se a sala já existe no objeto, se não, cria um array vazio
+            if (!mensagensPorSala[salaId]) {
+                mensagensPorSala[salaId] = [];
+            }
 
-    // Adiciona a nova mensagem ao array de mensagens da sala
-    mensagensPorSala[salaId].push(mensagem);
+            // Adiciona a nova mensagem ao array de mensagens da sala
+            mensagensPorSala[salaId].push(mensagem);
 
-    // Envie a nova mensagem para todos os clientes na sala usando WebSocket
-    wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({ type: 'novaMensagem', salaId, mensagem }));
-      }
+            // Envie a nova mensagem para todos os clientes na sala usando WebSocket
+            wss.clients.forEach((client) => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify({ type: 'novaMensagem', salaId, mensagem }));
+                }
+            });
+
+            res.status(200).json({ success: true });
+        } catch (error) {
+            console.error('Erro ao enviar mensagem:', error);
+            res.status(500).json({ error: 'Erro interno no servidor.' });
+        }
     });
-
-    res.status(200).json({ success: true });
-  } catch (error) {
-    console.error('Erro ao enviar mensagem:', error);
-    res.status(500).json({ error: 'Erro interno no servidor.' });
-  }
-});
 
     // Rota para criar uma nova sala
     app.post('/api/criarSala', async (req, res) => {
@@ -53,23 +55,21 @@ app.post('/api/enviarMensagem', (req, res) => {
                 id: gerarIdSimples(),
                 nome: req.body.nome,
             };
-    
+
             salasDisponiveis.push(novaSala);
             mensagensSala[novaSala.id] = [];
-    
+
             wss.clients.forEach((client) => {
                 if (client.readyState === WebSocket.OPEN) {
                     client.send(JSON.stringify({ type: 'novaSala', sala: novaSala }));
                 }
             });
-    
             res.status(201).json(novaSala);
         } catch (error) {
             console.error('Erro ao criar sala:', error);
             res.status(500).json({ error: 'Erro interno no servidor.' });
         }
     });
-    
     app.get('/api/salasDisponiveis', async (req, res) => {
         // Lógica para obter a lista de salas disponíveis do seu banco de dados ou onde preferir
 
@@ -175,13 +175,65 @@ app.post('/api/enviarMensagem', (req, res) => {
     // Rota para a página de agendamento da empresa
     app.get('/agendamento', mostrarHTML);
     function mostrarHTML(req, res) {
-        console.log('Renderizando página de agendamento...');
-
         if (req.session.loggedUser) {
             res.render('agendamento', { user: req.session.loggedUser });
         } else {
             res.redirect('/login.html');
         }
     }
+    // Deletar
+    app.delete('/empresa/:id', async (req, res) => {
+        const id_empresa = req.params.id;
+    
+        try {
+            const db = await open({
+                filename: './lib/gt.db',
+                driver: sqlite3.Database,
+            });
+    
+            await db.run('BEGIN TRANSACTION'); // Inicia a transação
+    
+            // Recuperar informações da empresa antes de destruir a sessão
+            const empresa = await db.get('SELECT * FROM clienteEmpresa WHERE id_empresa = ?', id_empresa);
+    
+            // Remover a imagem de perfil e a imagem da empresa se existirem
+            if (empresa && empresa.imagemPerfil) {
+                const imagemPerfilPath = empresa.imagemPerfil;
+                if (fs.existsSync(imagemPerfilPath)) {
+                    fs.unlinkSync(imagemPerfilPath);
+                }
+            }
+            if (empresa && empresa.imagemEmpresa) {
+                const imagemEmpresaPath = empresa.imagemEmpresa;
+                if (fs.existsSync(imagemEmpresaPath)) {
+                    fs.unlinkSync(imagemEmpresaPath);
+                }
+            }
+    
+            // Excluir agendamentos associados à empresa
+            await db.run('DELETE FROM agendamento WHERE id_empresa = ?', id_empresa);
+    
+            // Excluir a empresa
+            await db.run('DELETE FROM clienteEmpresa WHERE id_empresa = ?', id_empresa);
+    
+            // Destruir a sessão
+            req.session.destroy((err) => {
+                if (err) {
+                    console.error('Erro ao destruir a sessão:', err);
+                    return res.status(500).json({ success: false, error: 'Erro interno ao excluir usuário.' });
+                }
+                res.clearCookie('userID');
+                res.json({ success: true, message: `Deletado com sucesso.` });
+            });
+    
+            await db.run('COMMIT'); // Comita a transação
+            db.close();
+        } catch (error) {
+            console.error('Erro ao remover empresa:', error);
+            res.status(500).json({ success: false, error: 'Erro interno ao remover empresa.' });
+        }
+    });
+    
+    
 }
 export default empresaControl;

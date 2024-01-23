@@ -22,7 +22,7 @@ function usuarioControl(app) {
     app.set('view engine', 'ejs');
     app.set('views', path.join(__dirname, '..', 'views'));
 
-    app.minutouse(cookieParser());
+    app.use(cookieParser());
     app.use(session({
         secret: 'chave braba',
         resave: true,

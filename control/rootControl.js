@@ -6,7 +6,7 @@ function rootControl(app) {
     app.get("/", exibir);
 
     function exibir(req, res) {
-        const filePath = path.join(__dirname, "../Projeto-ReservaNaLoja-Daniel/");
+        const filePath = path.join(__dirname, "../frontExpress/");
         res.sendFile(filePath);
     }
 

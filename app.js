@@ -30,7 +30,7 @@ app.use(cors({
 // app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({extended: false}))
-app.use(express.static(path.join(__dirname, '../Projeto-ReservaNaLoja-Daniel')));
+app.use(express.static(path.join(__dirname, '../frontExpress')));
 app.use('/doc', express.static(path.join(__dirname, './control')));
 
 usuarioControl(app);
@@ -40,4 +40,3 @@ clienteControl(app, wss);
 agendamento(app, wss);
 appControl(app);
 export { app, wss, server };
-minuto
