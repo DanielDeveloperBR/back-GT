@@ -1,4 +1,4 @@
-import { app, wss, server } from './app.js';
+import { app, server } from './app.js';
 
 const port = 3000;
 

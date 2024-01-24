@@ -35,7 +35,7 @@
         // No seu script JS dentro do HTML/EJS
         window.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await fetch('http://localhost:3000/agendamento');
+                const response = await fetch('https://backend-express-ten.vercel.app/');
                 const agendamentos = await response.json();
 
                 // Agora você tem os dados dos agendamentos, faça o que precisar com eles

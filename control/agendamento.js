@@ -214,7 +214,7 @@ function agendamento(app, wss) {
                 driver: sqlite3.Database
             })
             const idEmpresa = req.session.loggedUser.id_empresa;
-            const { nome, dia, mes, hora} = req.body
+            const { nome, dia, mes, hora } = req.body
 
             const { id_empresa } = await db.get('SELECT id_empresa FROM clienteEmpresa WHERE id_empresa = ?', idEmpresa);
 

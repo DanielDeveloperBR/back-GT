@@ -10,7 +10,6 @@ import clienteControl from './control/clienteControl.js';
 import agendamento from './control/agendamento.js';
 import appControl from './control/appControl.js';
 import cors from 'cors';
-// import bodyParser from 'body-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -21,16 +20,15 @@ app.use(express.static(path.join(__dirname, 'views')));
 app.use('/uploads', express.static('uploads'));
 app.use('/uploadsClientes', express.static('uploadsClientes'));
 app.use(cors({
-  origin: '*',
+  origin: 'https://github.com/DanielDeveloperBR/Projeto-ReservaNaLoja/',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   optionsSuccessStatus: 204,
   allowedHeaders: 'Content-Type, Authorization',
 }));
-// app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({extended: false}))
-app.use(express.static(path.join(__dirname, '../frontExpress')));
+app.use(express.static('https://github.com/DanielDeveloperBR/Projeto-ReservaNaLoja/'))
 app.use('/doc', express.static(path.join(__dirname, './control')));
 
 usuarioControl(app);
